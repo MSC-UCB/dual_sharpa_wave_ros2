@@ -1,6 +1,23 @@
 # 驗證紀錄
 
-日期：2026-09-21。環境：Ubuntu 24.04 / ROS 2 Jazzy / Python 3.12.3。
+環境：Ubuntu 24.04 / ROS 2 Jazzy / Python 3.12.3。
+
+## 2026-09-22 控制工具與 hardware adapter
+
+`colcon build --symlink-install --packages-select dual_sharpa_wave` 成功。
+`colcon test --packages-select dual_sharpa_wave --event-handlers console_direct+`：**102 passed**（39.68 秒）。
+`colcon test-result --verbose`：**102 tests, 0 errors, 0 failures, 0 skipped**。
+
+- `ros2 pkg executables dual_sharpa_wave` 包含 `hand_node`、`gui_control.py`、`sine_control.py`、`step_control.py`。
+- 真正 DDS 整合測試執行安裝後的 sine／step 工具與兩個 mock hand processes，確認同時間戳、同相位偏移、輪換軸、未選軸保留、回到各側初始姿勢。子程序禁止 import 官方 SDK。
+- Tk GUI 在 WSLg 下測試 44 個 slider、收到回授前停用、初始化不發命令、單軸修改、開始／停止傳送、回授中斷後不自動恢復，以及重新載入姿勢。這是 UI 操作測試，ROS 傳輸另由共用 client 與 DDS 整合測試驗證。
+- 30 項 SDK adapter 測試使用 Fake SDK，涵蓋 serial、API 順序、非 identity mapping、degree/radian、status／bool、discovery timeout、讀寫與 cleanup 失敗、timeout 鎖定。另以真正 adapter ＋ Fake SDK 驗證共用 hand node 的回授與 timeout 路徑。
+- 原有 mock／QoS／左右隔離／RViz TF 測試全部通過；所有測試啟動的 processes 均已清理。
+- 官方 SDK 5.0.10.6 僅下载至 `/tmp` 解壓閱讀，未安裝、import、discovery 或連線。API 來源與 native 呼叫 timeout 限制見 [Hardware 說明](hardware.md)。
+
+結果檔案：`~/ws_fanuc/build/dual_sharpa_wave/pytest.xml`。測試使用 localhost discovery 與獨立 ROS domain。
+
+以下保留前次驗證紀錄，placeholder 等描述僅適用於當時版本。
 
 ## 2026-09-22 預覽開關簡化
 
@@ -8,7 +25,7 @@
 43 項非整合測試通過；兩項 DDS 整合測試在允許 localhost 通訊的環境下分別通過，共 45 項。
 `use_rviz=true` 測試透過 WSLg 啟動實際 RViz，驗證左右獨立 TF 更新與程序正常退出。測試需要可用的圖形顯示環境；Qt offscreen 模式在本機無法建立 RViz 的 OGRE render window。
 
-## 結果
+## 2026-09-21 初版結果
 
 | 檢查 | 結果 |
 |---|---|

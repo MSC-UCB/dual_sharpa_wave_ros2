@@ -27,6 +27,7 @@ def create_backend(parameters: dict) -> HandInterface:
         return SharpaSdkHand(
             parameters['serial_number'], parameters['speed_coeff'],
             parameters['current_coeff'], parameters['interpolation'],
+            parameters['sdk_discovery_timeout_sec'],
         )
     raise ValueError("backend must be 'mock' or 'sharpa_sdk'")
 
@@ -45,6 +46,7 @@ class HandNode(Node):
                 'command_timeout_sec': 0.5, 'mock_mode': 'first_order',
                 'mock_max_velocity_rad_s': 1.0, 'serial_number': '',
                 'speed_coeff': 0.3, 'current_coeff': 0.6, 'interpolation': True,
+                'sdk_discovery_timeout_sec': 10.0,
             }
             self.settings = {
                 name: self.declare_parameter(
@@ -108,9 +110,15 @@ class HandNode(Node):
         self._last_update = now
         timeout = self.settings['command_timeout_sec']
         reference = self._started_at if self._last_command is None else self._last_command
+        was_timed_out = self.timed_out
         self.timed_out = timeout > 0 and now - reference > timeout
         if self.timed_out:
-            self._warn('timeout', 'Command timeout: retaining the last target; no new target sent')
+            self._warn('timeout', 'Command timeout: no new target sent; applying backend timeout policy')
+            if not was_timed_out and self._last_command is not None:
+                try:
+                    self._backend.on_command_timeout()
+                except Exception as error:
+                    self._warn('timeout_backend', f'Backend timeout handling: {error}')
         try:
             self._backend.update(dt_sec)
             positions = validate_positions(self._backend.get_joint_positions())

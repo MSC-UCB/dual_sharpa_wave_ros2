@@ -104,10 +104,44 @@ def test_bad_publish_rate(context, rate):
         )
 
 
-def test_hardware_placeholder_fails_without_sdk():
+def test_hardware_requires_serial_before_sdk_import():
     with pytest.raises(ValueError, match='serial_number'):
         SharpaSdkHand('', 0.3, 0.6, True)
-    backend = SharpaSdkHand('explicit-test-serial', 0.3, 0.6, True)
-    with pytest.raises(NotImplementedError, match='No device connection'):
-        backend.start()
-    backend.stop()
+
+
+def test_timeout_hook_once_after_first_accepted_command(node, monkeypatch):
+    subject, backend, pub = node
+    now = subject._started_at + 1.0
+    monkeypatch.setattr(hand_node.time, 'monotonic', lambda: now)
+    subject._on_timer()
+    backend.on_command_timeout.assert_not_called()
+    subject._on_command(JointState(position=[0.1]*22))
+    now += 0.6
+    subject._on_timer()
+    subject._on_timer()
+    backend.on_command_timeout.assert_called_once()
+
+
+def test_real_hardware_adapter_with_fake_sdk_uses_shared_ros_node(context, monkeypatch, fake_sdk):
+    adapter = SharpaSdkHand('LEFT-SERIAL', 0.3, 0.6, True, sdk_factory=lambda: fake_sdk)
+    monkeypatch.setattr(hand_node, 'create_backend', lambda parameters: adapter)
+    subject = hand_node.HandNode(context=context, enable_rosout=False)
+    subject._publisher = Mock()
+    try:
+        now = subject._started_at
+        monkeypatch.setattr(hand_node.time, 'monotonic', lambda: now)
+        subject._on_command(JointState(position=[0.25] * 22))
+        subject._on_timer()
+        published = subject._publisher.publish.call_args.args[0]
+        assert list(published.position) == pytest.approx(adapter.get_joint_positions())
+        assert list(published.position) != [0.25] * 22
+        subject._publisher.reset_mock()
+        now += 0.6
+        subject._on_timer()
+        subject._publisher.publish.assert_not_called()
+        assert fake_sdk.calls[-2:] == [('stop',), ('disconnect', 'LEFT-SERIAL')]
+        writes = sum(c[0] == 'write' for c in fake_sdk.calls)
+        subject._on_command(JointState(position=[0.2] * 22))
+        assert sum(c[0] == 'write' for c in fake_sdk.calls) == writes
+    finally:
+        subject.destroy_node()

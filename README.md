@@ -2,7 +2,7 @@
 
 ROS 2 Jazzy / Ubuntu 24.04。左右各 22 個關節、兩個獨立 process，使用同一個 `hand_node` executable。第一階段可在完全沒有 Sharpa SDK 與實機的環境運作。
 
-目前驗收：build 成功，45 項測試通過，已實測 CLI pub/echo 與 RViz 程序啟動。詳見 [驗證紀錄](docs/validation.md)。Hardware backend 尚未實作或驗證。
+提供 GUI、sine、step 控制工具及可注入 Fake SDK 的 hardware adapter。Mock 與 adapter 離線測試不需要實機；官方 SDK binary、裝置連線與馬達動作尚未驗證。建置與測試結果見 [驗證紀錄](docs/validation.md)。
 
 ## 通訊架構
 
@@ -10,11 +10,11 @@ ROS 2 Jazzy / Ubuntu 24.04。左右各 22 個關節、兩個獨立 process，使
 控制程式 → ROS 2 / DDS joint_command → 共用 hand_node（驗證、排序、timeout）
                                    → HandInterface
                                        ├─ MockHand：模擬 actual/target
-                                       └─ SharpaSdkHand：未實作，明確 fail-fast
+                                       └─ SharpaSdkHand：SDK adapter（實機待驗證）
 控制程式／RViz ← ROS 2 / DDS joint_states ← 共用發布流程 ← backend 目前位置
 ```
 
-Mock 與未來實機共用 ROS node、topic、QoS、joint order、radians、指令驗證與發布流程。切換只改 launch/backend 與硬體設定，上層控制程式不需修改。Command 成功下發不等於到位；state 必須來自 backend 目前位置，讀取失敗時跳過發布，不拿 target 或舊資料冒充新的 feedback。
+Mock 與 hardware backend 共用 ROS node、topic、QoS、joint order、radians、指令驗證與發布流程。切換只改 launch/backend 與硬體設定，上層控制程式不需修改。Command 成功下發不等於到位；state 必須來自 backend 目前位置，讀取失敗時跳過發布，不拿 target 或舊資料冒充新的 feedback。
 
 | Topic | Type | 用途 |
 |---|---|---|
@@ -23,7 +23,7 @@ Mock 與未來實機共用 ROS node、topic、QoS、joint order、radians、指�
 | `/sharpa/right_hand/joint_command` | `sensor_msgs/msg/JointState` | 右手 22 維 radians command |
 | `/sharpa/right_hand/joint_states` | `sensor_msgs/msg/JointState` | 右手目前位置 |
 
-Nodes：`/sharpa/left_hand/hand_node`、`/sharpa/right_hand/hand_node`。沒有 44 維 public command/state topic。Python node 只使用 relative topic names。
+Nodes：`/sharpa/left_hand/hand_node`、`/sharpa/right_hand/hand_node`。沒有 44 維 public command/state topic。Hand node 使用 relative topic names；控制工具使用上述完整 topics。
 
 四個 topics 共用 QoS：**RELIABLE、VOLATILE、KEEP_LAST、depth=1**。新訂閱者不會收到舊的 command；高頻下只保留最新待處理資料，不保證逐筆執行任意快速發布的軌跡。需要連續追蹤時，上層應持續發布目標。
 
@@ -46,14 +46,16 @@ ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST ROS_DOMAIN_ID=171 colcon test --packages
 colcon test-result --verbose
 ```
 
-依賴由 `package.xml` 列出；主要為 `rclpy`、`sensor_msgs`、`launch_ros`、PyYAML 與 pytest。未安裝 ROS 的電腦仍可執行純 Python backend/validation tests：
+若改在 repository 根目錄執行 `colcon build`，產物會在該目錄的 `install/`，與 `~/ws_fanuc/install/` 是兩份獨立安裝。每個 terminal 要 source 本次 build 的那一份；`cd` 不會切換 ROS 套件來源。遇到 `No executable found` 可先執行 `ros2 pkg prefix dual_sharpa_wave` 確認來源，再用 `ros2 pkg executables dual_sharpa_wave` 檢查是否有三個控制工具。
+
+依賴由 `package.xml` 列出；主要為 `rclpy`、`sensor_msgs`、`launch_ros`、PyYAML、Tkinter（`python3-tk`）與 pytest。未安裝 ROS 的電腦仍可執行純 Python backend/validation tests：
 
 ```bash
-python3 -m pytest test/test_mock_hand.py test/test_joint_validation.py -q
+python3 -m pytest test/test_mock_hand.py test/test_joint_validation.py test/test_control_model.py test/test_sdk_hand.py -q
 ```
 
 測試包含兩個由正式 mock launch 啟動的獨立 process、實際 DDS 訊息往返、左右隔離、name reorder、錯誤指令、timeout、回讀失敗與 cleanup。整合測試對子程序注入 import guard：若嘗試 import 官方 `sharpa` module 就失敗。測試不啟動 hardware launch 或 CRX driver。
-其中 `use_rviz=true` 的整合測試會啟動並關閉 RViz，需要可用的圖形顯示環境（例如 WSLg）。
+其中 GUI 與 `use_rviz=true` 的整合測試需要可用的圖形顯示環境（例如 WSLg）。波形整合測試會執行安裝後的 `sine_control.py`／`step_control.py`，驗證左右同步輸入與未選軸保留。
 
 ## 啟動與手動 topic 測試
 
@@ -92,6 +94,50 @@ ros2 topic pub --once /sharpa/right_hand/joint_command sensor_msgs/msg/JointStat
 
 本機 DDS graph discovery 可能需數秒；剛啟動時 `topic list`/`node list` 可能暫時不完整。`echo` 明確指定 message type，可直接等待 state，避免自動判定 type 時的 discovery 競態。
 
+## GUI 與波形控制工具
+
+先依前述設定 source ROS／workspace，所有 terminals 使用同一個 ROS domain。Terminal 1 啟動：
+
+```bash
+ros2 launch dual_sharpa_wave dual_sharpa_mock.launch.py use_rviz:=true
+```
+
+Terminal 2 **擇一**執行以下控制工具，不要同時讓多個工具寫同一個 command topic：
+
+```bash
+ros2 run dual_sharpa_wave gui_control.py
+
+ros2 run dual_sharpa_wave sine_control.py \
+  --axes thumb_CMC_FE,index_MCP_FE,middle_MCP_FE \
+  --amplitude 0.1 --frequency 0.25 --cycles 2 --repeat 1
+
+ros2 run dual_sharpa_wave step_control.py \
+  --axes thumb_CMC_FE,index_MCP_FE,middle_MCP_FE \
+  --step-size 0.1 --base-seconds 1 --high-seconds 1 --cycles 2 --repeat 1
+```
+
+入口檔案位於 `script/`。GUI 左右各有 22 個 slider，單位 rad；收到該側有效回授後才可操作，按「Start Sending」才發布目標。「Load Current Pose」會先停止傳送，再從回授重設 slider。拖動一軸不改其他軸，回授數值獨立顯示。「Stop Sending」或關閉視窗不會回零，也不是實體急停。
+
+Sine／step 啟動時保存兩側各自的目前姿勢 `q0`，一次只改一對同名關節：
+
+- Sine：`q0 + amplitude * sin(2π * frequency * t)`，每軸跑 `cycles` 個整數週期。
+- Step：`q0 → q0 + step-size → q0`，前後各保持 `base-seconds`，高段保持 `high-seconds`，重複 `cycles` 次。
+- 左右共享時間起點／相位和 command stamp，依序發布到兩個 topics。同步指輸入波形，並非兩隻實體手硬體級同步，也不保證角度同號即視覺鏡像。
+- 未選軸保留起始姿勢；換軸及結束前持續發送 baseline，等待兩側所有關節回到 `tolerance` 內。Step 是目標階躍，實際回授仍受 mock 限速或 SDK 插值影響。
+
+三個工具都讀取 vendored URDF 的 joint limits，越界明確報錯。Sine 在起始姿勢附近雙向擺動；例如 PIP 在 0 rad 時無法接受負半波，需先用 GUI 調到範圍內的中心姿勢，或改用正向 step。這些限制不代表已完成實機校正。
+
+| 共用 CLI 參數 | 預設 | 用途 |
+|---|---|---|
+| `--rate` | `30` | Command 發布 Hz；需足以維持 hand node 的 command timeout |
+| `--state-timeout` | `1` | 回授最久可中斷秒數 |
+| `--wait-timeout` | `10` | Sine／step 等兩側 ROS 就緒的期限 |
+| `--gap` | `0.25` | Sine／step 換軸前 baseline 最短保持秒數 |
+| `--settle-timeout` | `10` | Sine／step 等回 baseline 的最長秒數，須大於 gap |
+| `--tolerance` | `0.02` | Sine／step 判定回 baseline 的 rad 容差 |
+
+完整參數可用各腳本的 `--help` 查看。回授無效／逾時時 GUI 停止傳送且不自動恢復，波形工具報錯退出。Ctrl-C 不額外送回零命令。Hardware 在輸入結束後達到 command timeout 會關閉 SDK session，下一次控制前需重啟 hardware hand nodes；Mock 可直接繼續下一次測試。
+
 ## Command 與時間語意
 
 - `position` 必須是 22 個有限數值；NaN/±Inf、21/23 維一律整筆拒絕。
@@ -101,8 +147,8 @@ ros2 topic pub --once /sharpa/right_hand/joint_command sensor_msgs/msg/JointStat
 - Timer 使用 steady clock，`dt` 與 command timeout 使用 `time.monotonic()`。ROS clock 調整不影響 mock 運動或 timeout；若設定 `use_sim_time`，只影響訊息 stamp，這不是物理模擬器的 lockstep 時間模式。
 - 預設 100 Hz 發布；實際 DDS 延遲與排程不保證精確 10 ms。
 - Timeout 預設 0.5 秒，`<=0` 停用。僅合法且 backend 接受的 command 重設時間；尚無 command 時從 node 啟動計時。
-- Timeout 保留最後 target、繼續追蹤並發布目前位置，不回 zero。新合法 command 解除 timeout。每類 warning 最多每 5 秒輸出一次。
-- 實體停止/hold/斷線處置尚待硬體 backend 實作及驗證；「不再下發新 target」不代表馬達停止。
+- Mock timeout 保留最後 target、繼續追蹤並發布目前位置，不回 zero。新合法 command 解除 timeout。每類 warning 最多每 5 秒輸出一次。
+- Hardware 在第一筆接受的 command 之後才啟用 timeout 處置：逾時呼叫 SDK `stop()` 並斷開該 serial，鎖定失敗狀態，需重新啟動 hand node。尚無 command 時只警告，不因等候 GUI 而關閉連線。SDK stop 的實際馬達效果尚待實機驗證。
 
 ## 參數
 
@@ -117,9 +163,10 @@ ros2 topic pub --once /sharpa/right_hand/joint_command sensor_msgs/msg/JointStat
 | `mock_mode` | `first_order` | `instant` 或限速追蹤 |
 | `mock_max_velocity_rad_s` | `1.0` | 有限正數 |
 | `serial_number` | 空字串 | mock 不使用，hardware 必須明確指定 |
-| `speed_coeff` | `0.3` | 保留給硬體；mock 不模擬 |
-| `current_coeff` | `0.6` | 保留給硬體；mock 不模擬 |
-| `interpolation` | `true` | 保留給 SDK；mock 不模擬 SDK 插值 |
+| `speed_coeff` | `0.3` | SDK 速度係數，adapter 接受 `(0, 1]`；mock 不模擬 |
+| `current_coeff` | `0.6` | SDK 電流係數，adapter 接受 `(0, 1]`；mock 不模擬 |
+| `interpolation` | `true` | 傳給 SDK position API；mock 不模擬 SDK 插值 |
+| `sdk_discovery_timeout_sec` | `10.0` | 指定 serial 的 discovery 等待期限；不限制 native API 單次呼叫時間 |
 
 ```bash
 ros2 launch dual_sharpa_wave dual_sharpa_mock.launch.py publish_rate_hz:=50.0
@@ -163,15 +210,15 @@ ros2 launch dual_sharpa_wave dual_sharpa_mock.launch.py publish_rate_hz:=50.0
 
 `joint_names.py` 是唯一 authoritative order。`SDK_TO_URDF_INDEX = (0, 1, ..., 21)`，定義為 `sdk[i] → canonical[SDK_TO_URDF_INDEX[i]]`；`URDF_TO_SDK_INDEX` 是反向 mapping，本版本同為 identity。這是文件與模型順序核對，尚未以實機確認每個關節的方向／角度零位。
 
-未來 SDK adapter 在邊界處轉換 order；`set_joint_position()` 輸入 radians，若使用 `get_joint_position_degree()`，回讀必須轉 radians。SDK header 也列出 `get_joint_position_rad()`，採用前仍需確認所用 Python binding 行為。ROS callback 不包含 SDK 細節。
+SDK adapter 在邊界處轉換 order；`set_joint_position()` 輸入 radians，`get_joint_position_degree()` 回讀轉 radians。採用官方 Python sample 的 degree API，ROS callback 不包含 SDK 細節。
 
 ## Hardware 邊界
 
-目前 `SharpaSdkHand` 是明確的 `NotImplementedError` placeholder。Hardware launch 直接 fail-fast，不啟動 node、不 import SDK、不 discovery、不連線、也不 fallback 到 mock。Mock package 的安裝與測試不需要 SDK。
+`SharpaSdkHand` 已實作指定 serial 連線、POSITION mode、速度／電流係數、SDK control source、命令下發、回授轉換與資源清理。SDK 只在 hardware `start()` 才載入，錯誤不會 fallback 到 mock。
 
-SDK 5.0.10 的 sample 會等待實機 discovery；公開 API/範例未找到完整虛擬手模式。`ReplayMockHandService` 名稱雖含 Mock，實際仍呼叫裝置；`infer_offline.h` 是觸覺資料離線推論，不是關節模擬。
+Hardware launch 預設讀取 `config/dual_sharpa_hardware.yaml`，先檢查左右 serial 非空且不重複，再啟動兩個 hand nodes。預設空 serial 會直接報錯。SDK 環境設定、操作方式、API 證據與限制見 [Hardware 使用說明](docs/hardware.md)。
 
-未來實作必須以 YAML serial 明確綁定左右手、lazy-load SDK、檢查所有 status、確保 startup/shutdown cleanup，並以可注入 fake SDK client 測試同一份 adapter。Fake client 測試只驗證呼叫、mapping、單位、錯誤與 cleanup，不能驗證官方 SDK binary、網路或硬體。硬體未驗證前不啟動。
+Fake SDK 測試驗證的是同一份 adapter 的呼叫、mapping、單位、錯誤與 cleanup，不驗證官方 SDK binary、網路或實體馬達。自動測試不連接裝置。SDK 的 `stop()`／斷線不能宣稱是已驗證的實體急停；native API 阻塞時，同一執行緒中的 ROS timer 也無法保證準時處理 timeout。
 
 本 package 不修改 `dual_crx_control`，不啟動任何 FANUC driver，也不實作 MIT、torque/velocity command、teleop 或物理模擬。
 

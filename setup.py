@@ -25,5 +25,10 @@ setup(
     description='Independent Sharpa Wave hand interfaces and offline mock backend',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': ['hand_node = dual_sharpa_wave.hand_node:main']},
+    entry_points={'console_scripts': [
+        'hand_node = dual_sharpa_wave.hand_node:main',
+        'gui_control.py = dual_sharpa_wave.gui_control:main',
+        'sine_control.py = dual_sharpa_wave.wave_control:sine_main',
+        'step_control.py = dual_sharpa_wave.wave_control:step_main',
+    ]},
 )

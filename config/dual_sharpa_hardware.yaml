@@ -1,0 +1,23 @@
+# Fill in actual serials. Empty/duplicate serials fail before either node starts.
+/sharpa/left_hand/hand_node:
+  ros__parameters:
+    side: left
+    backend: sharpa_sdk
+    serial_number: ""
+    speed_coeff: 0.3
+    current_coeff: 0.6
+    interpolation: true
+    publish_rate_hz: 100.0
+    command_timeout_sec: 0.5
+    sdk_discovery_timeout_sec: 10.0
+/sharpa/right_hand/hand_node:
+  ros__parameters:
+    side: right
+    backend: sharpa_sdk
+    serial_number: ""
+    speed_coeff: 0.3
+    current_coeff: 0.6
+    interpolation: true
+    publish_rate_hz: 100.0
+    command_timeout_sec: 0.5
+    sdk_discovery_timeout_sec: 10.0

@@ -31,3 +31,6 @@ class HandInterface(ABC):
 
     def update(self, dt_sec: float) -> None:
         """Advance a simulation if needed; hardware may keep this no-op."""
+
+    def on_command_timeout(self) -> None:
+        """Called once after an accepted command stream expires; mock retains target."""
