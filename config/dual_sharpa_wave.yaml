@@ -1,0 +1,25 @@
+/sharpa/left_hand/hand_node:
+  ros__parameters:
+    side: left
+    backend: mock
+    publish_rate_hz: 100.0
+    command_timeout_sec: 0.5
+    mock_mode: first_order
+    mock_max_velocity_rad_s: 1.0
+    serial_number: ""
+    speed_coeff: 0.3
+    current_coeff: 0.6
+    interpolation: true
+
+/sharpa/right_hand/hand_node:
+  ros__parameters:
+    side: right
+    backend: mock
+    publish_rate_hz: 100.0
+    command_timeout_sec: 0.5
+    mock_mode: first_order
+    mock_max_velocity_rad_s: 1.0
+    serial_number: ""
+    speed_coeff: 0.3
+    current_coeff: 0.6
+    interpolation: true
