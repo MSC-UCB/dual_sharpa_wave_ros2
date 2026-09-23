@@ -30,8 +30,8 @@ export LD_LIBRARY_PATH="/opt/sharpa-wave-sdk/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_
 複製 `config/dual_sharpa_hardware.yaml`，填入左右手實際 serial（以字串儲存）。不可用 discovery 順序或假 serial 代替。兩側 serial 空白或相同，launch 會在建立兩個 hand node actions 前拒絕。
 
 ```bash
-ros2 launch dual_sharpa_wave dual_sharpa_hardware.launch.py \
-  config_file:=/absolute/path/my_sharpa_hardware.yaml use_rviz:=true
+ros2 launch dual_sharpa_wave dual_sharpa.launch.py \
+  backend:=sharpa_sdk config_file:=/absolute/path/my_sharpa_hardware.yaml use_rviz:=true
 ```
 
 這個指令會連接並啟動 SDK session；目前機器沒有實機時請使用 mock launch。`use_rviz` 是獨立手模型預覽，並不代表手已校正／安裝到 CRX；正式 combined model 應關閉獨立預覽。
@@ -44,7 +44,7 @@ ros2 launch dual_sharpa_wave dual_sharpa_hardware.launch.py \
 - `sdk_discovery_timeout_sec` 預設 10 秒，只等待指定 serial 出現在 discovery。`connect()` 等 native API 的單次呼叫沒有已核對可用的 timeout 參數，因此目前不提供 native 呼叫的硬性時間上限；同一 ROS 執行緒遇到 native 阻塞時，command watchdog 也可能延遲。
 - 啟動完成前讀取一次 feedback；初始化中途失敗會嘗試 stop／disconnect，清理錯誤一起回報。
 - 寫入 status 失敗、讀取 status 失敗或 feedback 非 22 維有限數值時，adapter 關閉該 SDK session 並鎖定錯誤；後續命令拒絕，需重啟 hand node。
-- 第一筆接受的 command 之後，連續超過 `command_timeout_sec`（預設 0.5 秒）沒有接受到新 command，呼叫 SDK stop 並斷線。開始控制前的等候只發出 warning，不觸發此關閉流程。`<=0` 停用 command timeout。
+- 第一筆接受的 command 之後，若 `command_timeout_sec` 大於 0 且超時沒有新 command，會呼叫 SDK stop 並斷線。開始控制前的等候只發出 warning，不觸發此關閉流程。`<=0` 停用 command timeout；目前提供的真实硬件配置使用 `0.0`，因此 session 只在 launch/node 關閉時停止。
 - GUI 停止傳送、waveform 結束或 Ctrl-C 後不自動回零。Hardware timeout 關閉 session 後，需要重啟 hand node 再進行下一次控制；重新連線不會自動重播最後 target。
 - `stop()` 即使失敗也會嘗試 disconnect；SDK bool/status 失敗會被記錄。SDK 的停止／斷線不等於經過驗證的實體急停，實際馬達效果與斷線處置仍需現場核對。
 

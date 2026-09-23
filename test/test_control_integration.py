@@ -73,7 +73,8 @@ def test_wave_scripts_against_mock(tmp_path, kind):
                 p.read_text() for p in tmp_path.glob('*.log'))
 
     try:
-        launch = start(['ros2', 'launch', 'dual_sharpa_wave', 'dual_sharpa_mock.launch.py',
+        launch = start(['ros2', 'launch', 'dual_sharpa_wave', 'dual_sharpa.launch.py',
+                        'backend:=mock',
                         f'config_file:={config}'], 'launch.log')
         # Observer itself is also a command subscriber.
         spin_until(lambda: len(states) == 2 and all(p.get_subscription_count() >= 2 for p in pubs.values()))

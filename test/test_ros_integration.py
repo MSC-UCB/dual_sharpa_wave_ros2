@@ -84,7 +84,7 @@ def test_dual_mock_over_dds(tmp_path, use_rviz):
     log_path = tmp_path / 'launch.log'
     stream = log_path.open('w')
     proc = subprocess.Popen(
-        ['ros2', 'launch', 'dual_sharpa_wave', 'dual_sharpa_mock.launch.py',
+        ['ros2', 'launch', 'dual_sharpa_wave', 'dual_sharpa.launch.py', 'backend:=mock',
          f'config_file:={config_path}', 'publish_rate_hz:=60.0',
          f'use_rviz:={str(use_rviz).lower()}'],
         env=env, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True,

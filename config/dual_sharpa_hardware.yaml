@@ -1,23 +1,23 @@
-# Fill in actual serials. Empty/duplicate serials fail before either node starts.
+# Confirmed by Sharpa SDK discovery on 2026-09-22.
 /sharpa/left_hand/hand_node:
   ros__parameters:
     side: left
     backend: sharpa_sdk
-    serial_number: ""
+    serial_number: "CD52943BCD53"
     speed_coeff: 0.3
     current_coeff: 0.6
     interpolation: true
     publish_rate_hz: 100.0
-    command_timeout_sec: 0.5
+    command_timeout_sec: 0.0
     sdk_discovery_timeout_sec: 10.0
 /sharpa/right_hand/hand_node:
   ros__parameters:
     side: right
     backend: sharpa_sdk
-    serial_number: ""
+    serial_number: "C956943BC957"
     speed_coeff: 0.3
     current_coeff: 0.6
     interpolation: true
     publish_rate_hz: 100.0
-    command_timeout_sec: 0.5
+    command_timeout_sec: 0.0
     sdk_discovery_timeout_sec: 10.0

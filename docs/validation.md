@@ -21,7 +21,7 @@
 
 ## 2026-09-22 預覽開關簡化
 
-預覽改為只由 `use_rviz` 控制；`ros2 launch ... --show-args` 已確認只列出 `config_file`、`publish_rate_hz`、`use_rviz`。
+预览由 `use_rviz` 控制；统一 launch 由 `backend:=mock` 或 `backend:=sharpa_sdk` 切换，`ros2 launch ... --show-args` 会列出 `backend`、`config_file`、`publish_rate_hz`、`use_rviz`。
 43 項非整合測試通過；兩項 DDS 整合測試在允許 localhost 通訊的環境下分別通過，共 45 項。
 `use_rviz=true` 測試透過 WSLg 啟動實際 RViz，驗證左右獨立 TF 更新與程序正常退出。測試需要可用的圖形顯示環境；Qt offscreen 模式在本機無法建立 RViz 的 OGRE render window。
 
