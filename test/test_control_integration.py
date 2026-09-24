@@ -38,7 +38,7 @@ def test_wave_scripts_against_mock(tmp_path, kind):
     env['PYTHONPATH'] = str(guard) + os.pathsep + env.get('PYTHONPATH', '')
     config = tmp_path / 'mock.yaml'
     config.write_text(yaml.safe_dump({f'/sharpa/{s}_hand/hand_node': {'ros__parameters': {
-        'mock_mode': 'instant', 'publish_rate_hz': 100.0}}
+        'publish_rate_hz': 100.0}}
         for s in ('left', 'right')}))
     ctx = Context()
     rclpy.init(context=ctx, domain_id=domain)

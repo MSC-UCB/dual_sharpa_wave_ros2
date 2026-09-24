@@ -21,7 +21,7 @@ from .qos import hand_qos
 
 def create_backend(parameters: dict) -> HandInterface:
     if parameters['backend'] == 'mock':
-        return MockHand(parameters['mock_mode'], parameters['mock_max_velocity_rad_s'])
+        return MockHand()
     if parameters['backend'] == 'sharpa_sdk':
         from .sharpa_sdk_hand import SharpaSdkHand
         return SharpaSdkHand(
@@ -43,8 +43,7 @@ class HandNode(Node):
         try:
             defaults = {
                 'side': 'left', 'backend': 'mock', 'publish_rate_hz': 100.0,
-                'command_timeout_sec': 0.5, 'mock_mode': 'first_order',
-                'mock_max_velocity_rad_s': 1.0, 'serial_number': '',
+                'command_timeout_sec': 0.5, 'serial_number': '',
                 'speed_coeff': 0.3, 'current_coeff': 0.6, 'interpolation': True,
                 'sdk_discovery_timeout_sec': 10.0,
             }
@@ -56,7 +55,7 @@ class HandNode(Node):
             }
             self.names = joint_names(self.settings['side'])
             for key in (
-                'publish_rate_hz', 'command_timeout_sec', 'mock_max_velocity_rad_s',
+                'publish_rate_hz', 'command_timeout_sec',
                 'speed_coeff', 'current_coeff',
             ):
                 if not math.isfinite(self.settings[key]):

@@ -200,7 +200,8 @@ For a new real hand setup, first use the GUI for a single-side, single-joint, sm
 - An empty `name` array means canonical joint order. With names, the node validates and reorders the command.
 - State comes from the backend's actual position readback; the last target is never used as fabricated feedback.
 - The mock default command timeout is 0.5 seconds; the real hardware configuration sets it to `0.0`, so the SDK session remains connected until the launch/node is closed.
-- Mock timeout keeps the target and continues publishing simulated position.
+- Mock commands update the reported joint positions immediately; there is no mock joint speed limit.
+- Mock timeout keeps the last position and continues publishing it.
 - With the provided real hardware configuration, no command timeout is enabled; closing the launch/node performs the SDK stop and disconnect.
 - SDK `stop()` is not a validated physical emergency stop.
 

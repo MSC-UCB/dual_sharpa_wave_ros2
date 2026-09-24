@@ -47,7 +47,6 @@ def test_dual_mock_over_dds(tmp_path, use_rviz):
         config[f'/sharpa/{side}_hand/hand_node'] = {'ros__parameters': {
             # Deliberately contradictory: mock launch must pin side and backend.
             'backend': 'sharpa_sdk', 'side': 'right' if side == 'left' else 'left',
-            'mock_mode': 'first_order', 'mock_max_velocity_rad_s': 0.2,
             'command_timeout_sec': 0.15, 'publish_rate_hz': 30.0,
         }}
     config_path = tmp_path / 'hands.yaml'
@@ -149,15 +148,14 @@ def test_dual_mock_over_dds(tmp_path, use_rviz):
                     assert qos.depth == 1
         assert not any('/sharpa/dual_hand/' in name for name, _ in observer.get_topic_names_and_types())
         publishers['left'].publish(JointState(position=[0.3]+[0.0]*21))
-        wait_for(lambda: any(0.01 < msg.position[0] < 0.25 for msg in messages['left']))
         wait_for(lambda: abs(messages['left'][-1].position[0] - 0.3) < 1e-6)
+        spin_for(0.2)
         assert all(list(msg.position) == [0.0]*22 for msg in messages['right'])
         if use_rviz:
-            spin_for(0.2)
             left_rotations = {name: t.transform.rotation for name, t in transforms.items()}
             assert any(left_rotations[n] != initial_rotations[n] for n in transforms if '/left_' in n)
             assert all(left_rotations[n] == initial_rotations[n] for n in transforms if '/right_' in n)
-        # Movement exceeds the 0.15s timeout and still reaches the retained target.
+        # Timeout keeps the last target after the mock reaches it immediately.
         assert 'Command timeout' in log_path.read_text()
         right_target = [0.1, -0.12] + [0.0]*20
         publishers['right'].publish(JointState(
