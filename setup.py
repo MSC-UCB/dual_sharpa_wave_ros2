@@ -27,6 +27,7 @@ setup(
     tests_require=['pytest'],
     entry_points={'console_scripts': [
         'hand_node = dual_sharpa_wave.hand_node:main',
+        'tactile_viewer.py = dual_sharpa_wave.tactile_viewer:main',
         'gui_control.py = dual_sharpa_wave.gui_control:main',
         'sine_control.py = dual_sharpa_wave.wave_control:sine_main',
         'step_control.py = dual_sharpa_wave.wave_control:step_main',

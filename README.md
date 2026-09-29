@@ -147,6 +147,33 @@ ros2 topic echo /sharpa/right_hand/joint_states sensor_msgs/msg/JointState
 
 Before the first command, `Command timeout: no new target sent` is expected. The node waits for a command and does not close the hardware connection just because it is waiting.
 
+## Tactile viewer (OpenCV)
+
+After rebuilding the package and sourcing ROS/workspace in both terminals,
+configure the SDK environment in terminal 1 and run:
+
+```bash
+# Terminal 1: read joint feedback and tactile data without accepting motion commands.
+ros2 launch dual_sharpa_wave dual_sharpa.launch.py \
+  backend:=sharpa_sdk read_only:=true use_rviz:=false
+
+# Terminal 2: open the ROS subscriber viewer.
+ros2 run dual_sharpa_wave tactile_viewer.py
+```
+
+`read_only` is a launch argument (default: `false`). Setting it to `true`
+disables the joint-command subscription, rejects motion targets, and skips SDK
+joint control configuration. Sensing startup still initializes ports and time
+synchronization; it does not automatically calibrate the sensors.
+
+The viewer shows RAW, deformation and force-magnitude heatmaps for all ten
+fingers. `NO DATA` / `STALE` indicate missing or outdated images. Use
+`--force-max 15` to increase the fixed heatmap scale (default: 1 SDK unit;
+physical units are unconfirmed). Press `q` / `Esc` or close the window to exit;
+the launch remains running. The viewer never connects to the SDK directly.
+
+See [formats, test results and a real-data preview](docs/tactile_investigation.md).
+
 ## GUI control
 
 Keep the hardware launch running and start the GUI in another terminal:

@@ -34,3 +34,7 @@ class HandInterface(ABC):
 
     def on_command_timeout(self) -> None:
         """Called once after an accepted command stream expires; mock retains target."""
+
+    def take_tactile_frames(self):
+        """New frames and optional receive error; mock has no tactile data."""
+        return [], None

@@ -27,7 +27,8 @@ def load_sdk():
 class SharpaSdkHand(HandInterface):
     def __init__(self, serial_number: str, speed_coeff: float, current_coeff: float,
                  interpolation: bool, discovery_timeout_sec=10.0, *, sdk_factory=None,
-                 clock=time.monotonic, sleep=time.sleep):
+                 clock=time.monotonic, sleep=time.sleep, read_only=False,
+                 tactile_enabled=False, side='left', stamp_clock=time.time_ns):
         if not isinstance(serial_number, str) or not serial_number.strip():
             raise ValueError('sharpa_sdk requires an explicit nonempty serial_number')
         for name, value in (('speed_coeff', speed_coeff), ('current_coeff', current_coeff)):
@@ -47,6 +48,12 @@ class SharpaSdkHand(HandInterface):
         self._connection_attempted = False
         self._started = False
         self._faulted = False
+        self.read_only = read_only
+        self.side = side
+        self._tactile = None
+        if tactile_enabled:
+            from .tactile import TactileCache
+            self._tactile = TactileCache(side, stamp_clock)
 
     @staticmethod
     def _status(operation, status):
@@ -77,14 +84,25 @@ class SharpaSdkHand(HandInterface):
             self._hand = self._manager.connect(self.serial_number)
             if self._hand is None:
                 raise BackendError(f'connect returned no hand for {self.serial_number}')
-            for method, value in (
+            if self._tactile is not None:
+                info = self._hand.get_device_info()
+                expected = sdk.HandSide.LEFT if self.side == 'left' else sdk.HandSide.RIGHT
+                if info.hand_side != expected:
+                    raise BackendError(f'{self.serial_number}: hand side does not match {self.side}')
+                if not info.has_fingertip_tactile():
+                    raise BackendError(f'{self.serial_number}: fingertip tactile is unsupported')
+                self._hand.set_tactile_callback(self._tactile.receive)
+            settings = () if self.read_only else (
                 ('set_control_mode', sdk.ControlMode.POSITION),
                 ('set_speed_coeff', self.speed_coeff),
                 ('set_current_coeff', self.current_coeff),
                 ('set_control_source', sdk.ControlSource.SDK),
-            ):
+            )
+            for method, value in settings:
                 self._status(method, getattr(self._hand, method)(value))
             self._bool('start', self._hand.start())
+            if self._tactile is not None and not self._hand.is_tactile_ready():
+                raise BackendError('Tactile receiver is not ready after start')
             self._started = True
             # Check that real feedback is readable, without issuing a motion command.
             self.get_joint_positions()
@@ -103,6 +121,8 @@ class SharpaSdkHand(HandInterface):
             raise BackendError('Hardware fault latched; restart the hand node before resuming')
 
     def set_joint_positions(self, positions: Sequence[float]):
+        if self.read_only:
+            raise BackendError('Read-only session rejects all motion commands')
         self._require_started(command=True)
         canonical = validate_positions(positions)
         sdk_positions = [canonical[index] for index in SDK_TO_URDF_INDEX]
@@ -133,7 +153,12 @@ class SharpaSdkHand(HandInterface):
         # A stopped SDK session never auto-resumes on the next queued command.
         self._trip(BackendError('Hardware command timeout; SDK stopped and session closed'))
 
+    def take_tactile_frames(self):
+        return self._tactile.drain() if self._tactile is not None else ([], None)
+
     def stop(self):
+        if self._tactile is not None:
+            self._tactile.close()
         hand, manager = self._hand, self._manager
         attempted = self._connection_attempted
         self._hand = self._manager = None

@@ -32,6 +32,10 @@ def _hand_actions(context, backend: str, config: Path):
     actions = []
     for side in ('left', 'right'):
         overrides = {'side': side, 'backend': backend}
+        read_only = LaunchConfiguration('read_only', default='false').perform(context)
+        if read_only not in ('true', 'false'):
+            raise ValueError('read_only must be true or false')
+        overrides['read_only'] = read_only == 'true'
         if rate:
             overrides['publish_rate_hz'] = float(rate)
         actions.append(Node(
@@ -126,6 +130,10 @@ def generate_launch_description():
             'publish_rate_hz',
             default_value='',
             description='Optional publish-rate override',
+        ),
+        DeclareLaunchArgument(
+            'read_only', default_value='false', choices=['true', 'false'],
+            description='Disable motion subscription and SDK control configuration',
         ),
         DeclareLaunchArgument(
             'use_rviz',

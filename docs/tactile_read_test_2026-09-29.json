@@ -1,0 +1,362 @@
+{
+  "image_streams": 30,
+  "motion_publishers": 0,
+  "motion_subscribers": 0,
+  "viewer_alive": true,
+  "images": {
+    "left_pinky_RAW": {
+      "count": 268,
+      "hz": 26.487508330455857,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 19.0,
+      "max": 255.0
+    },
+    "left_pinky_DEFORM3": {
+      "count": 267,
+      "hz": 26.361860945141245,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "left_pinky_DIST_FORCE": {
+      "count": 267,
+      "hz": 26.487362394277465,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.04058837890625,
+      "max": 0.0251312255859375
+    },
+    "left_index_RAW": {
+      "count": 272,
+      "hz": 26.99001287249449,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 22.0,
+      "max": 255.0
+    },
+    "left_index_DEFORM3": {
+      "count": 271,
+      "hz": 26.99003675923799,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "left_index_DIST_FORCE": {
+      "count": 271,
+      "hz": 26.990029982845915,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.0309295654296875,
+      "max": 0.0182037353515625
+    },
+    "left_middle_RAW": {
+      "count": 278,
+      "hz": 27.732435875417554,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 11.0,
+      "max": 255.0
+    },
+    "left_middle_DEFORM3": {
+      "count": 278,
+      "hz": 27.73242853063524,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "left_middle_DIST_FORCE": {
+      "count": 278,
+      "hz": 27.732412593031345,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.030975341796875,
+      "max": 0.02020263671875
+    },
+    "left_thumb_RAW": {
+      "count": 277,
+      "hz": 27.4870731981736,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 7.0,
+      "max": 255.0
+    },
+    "left_thumb_DEFORM3": {
+      "count": 277,
+      "hz": 27.490717691692637,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "left_thumb_DIST_FORCE": {
+      "count": 276,
+      "hz": 27.239624561471334,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.029815673828125,
+      "max": 0.01849365234375
+    },
+    "left_ring_RAW": {
+      "count": 276,
+      "hz": 27.61714029611894,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 14.0,
+      "max": 255.0
+    },
+    "left_ring_DEFORM3": {
+      "count": 275,
+      "hz": 27.491598836344874,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "left_ring_DIST_FORCE": {
+      "count": 276,
+      "hz": 27.617118801694406,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.035797119140625,
+      "max": 0.0235443115234375
+    },
+    "right_index_RAW": {
+      "count": 281,
+      "hz": 27.981886925273088,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 18.0,
+      "max": 255.0
+    },
+    "right_index_DEFORM3": {
+      "count": 281,
+      "hz": 27.984962483100645,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "right_index_DIST_FORCE": {
+      "count": 281,
+      "hz": 27.984940505319507,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.09228515625,
+      "max": 0.67724609375
+    },
+    "right_pinky_RAW": {
+      "count": 277,
+      "hz": 27.602730427297868,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 14.0,
+      "max": 255.0
+    },
+    "right_pinky_DEFORM3": {
+      "count": 277,
+      "hz": 27.60273112658,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "right_pinky_DIST_FORCE": {
+      "count": 277,
+      "hz": 27.602728583420788,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.0303497314453125,
+      "max": 0.01953125
+    },
+    "right_ring_RAW": {
+      "count": 275,
+      "hz": 26.97609685118561,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 17.0,
+      "max": 255.0
+    },
+    "right_ring_DEFORM3": {
+      "count": 275,
+      "hz": 26.9759752459707,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 132.0
+    },
+    "right_ring_DIST_FORCE": {
+      "count": 275,
+      "hz": 26.97296222124827,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.1263427734375,
+      "max": 12.2734375
+    },
+    "right_thumb_RAW": {
+      "count": 279,
+      "hz": 27.858866025157017,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 6.0,
+      "max": 253.0
+    },
+    "right_thumb_DEFORM3": {
+      "count": 279,
+      "hz": 27.858854362338604,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "right_middle_RAW": {
+      "count": 282,
+      "hz": 27.855277563600932,
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "min": 13.0,
+      "max": 255.0
+    },
+    "right_middle_DEFORM3": {
+      "count": 282,
+      "hz": 27.855281323783522,
+      "shape": [
+        240,
+        240,
+        3
+      ],
+      "dtype": "uint8",
+      "min": 64.0,
+      "max": 130.0
+    },
+    "right_middle_DIST_FORCE": {
+      "count": 282,
+      "hz": 27.855277633799716,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.038726806640625,
+      "max": 0.0229034423828125
+    },
+    "right_thumb_DIST_FORCE": {
+      "count": 279,
+      "hz": 27.85883462935809,
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "min": -0.06146240234375,
+      "max": 0.04327392578125
+    }
+  },
+  "joint_hz": {
+    "left": 99.99939017896408,
+    "right": 99.99847566779714
+  }
+}
