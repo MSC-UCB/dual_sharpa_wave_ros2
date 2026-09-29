@@ -17,6 +17,7 @@ setup(
     name=package_name,
     version='0.1.0',
     packages=find_packages(exclude=['test']),
+    scripts=['script/move_to_default_pose.py'],
     data_files=data_files,
     install_requires=['setuptools'],
     zip_safe=True,
