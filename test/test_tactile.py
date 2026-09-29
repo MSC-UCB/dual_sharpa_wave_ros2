@@ -137,6 +137,44 @@ def test_read_only_sdk_never_configures_or_writes(fake_sdk):
     assert not any(c[0] in ('write', 'mode', 'source', 'speed', 'current') for c in sdk.calls)
 
 
+@pytest.mark.parametrize('side,channel', [('left', 5), ('right', 0)])
+@pytest.mark.parametrize('read_only', [True, False])
+def test_tactile_restart_uses_new_session_cache(fake_sdk, side, channel, read_only):
+    sdk = tactile_sdk(fake_sdk, side=side)
+    hand = SharpaSdkHand('LEFT-SERIAL', .3, .6, True, sdk_factory=lambda: sdk,
+                        read_only=read_only, tactile_enabled=True, side=side,
+                        stamp_clock=lambda: Time(sec=5))
+    old_callbacks = []
+    # Stopping before first start must not prevent future tactile delivery either.
+    hand.stop()
+    try:
+        for _ in range(3):
+            hand.start()
+            callback = sdk.callback
+            assert hand.take_tactile_frames() == ([], None)
+            for old_callback in old_callbacks:
+                old_callback(frame(channel=channel, ts=99.))
+                old_callback(None)
+            assert hand.take_tactile_frames() == ([], None)
+
+            # The same frame identity is valid again in a new session.
+            callback(frame(channel=channel))
+            hand.start()  # Already started: preserve the pending frame and callback.
+            assert sdk.callback is callback
+            frames, error = hand.take_tactile_frames()
+            assert error is None and len(frames) == 1
+            assert frames[0].channel == channel
+            assert frames[0].stamp == Time(sec=5)
+
+            callback(frame(channel=channel, ts=2.))  # Leave a pending old frame.
+            hand.stop()
+            hand.stop()
+            assert hand.take_tactile_frames() == ([], None)
+            old_callbacks.append(callback)
+    finally:
+        hand.stop()
+
+
 @pytest.mark.parametrize('side,ready', [('right', True), ('left', False)])
 def test_tactile_start_failure_cleans_up(fake_sdk, side, ready):
     sdk = tactile_sdk(fake_sdk, side=side, ready=ready)

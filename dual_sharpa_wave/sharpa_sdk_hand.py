@@ -50,10 +50,12 @@ class SharpaSdkHand(HandInterface):
         self._faulted = False
         self.read_only = read_only
         self.side = side
+        self._tactile_enabled = tactile_enabled
+        self._stamp_clock = stamp_clock
         self._tactile = None
         if tactile_enabled:
-            from .tactile import TactileCache
-            self._tactile = TactileCache(side, stamp_clock)
+            from .tactile import channels
+            channels(side)  # Validate before any SDK connection is attempted.
 
     @staticmethod
     def _status(operation, status):
@@ -84,13 +86,17 @@ class SharpaSdkHand(HandInterface):
             self._hand = self._manager.connect(self.serial_number)
             if self._hand is None:
                 raise BackendError(f'connect returned no hand for {self.serial_number}')
-            if self._tactile is not None:
+            if self._tactile_enabled:
+                from .tactile import TactileCache
                 info = self._hand.get_device_info()
                 expected = sdk.HandSide.LEFT if self.side == 'left' else sdk.HandSide.RIGHT
                 if info.hand_side != expected:
                     raise BackendError(f'{self.serial_number}: hand side does not match {self.side}')
                 if not info.has_fingertip_tactile():
                     raise BackendError(f'{self.serial_number}: fingertip tactile is unsupported')
+                # A stopped cache stays closed for late callbacks from the old session.
+                # Each new session gets fresh pending frames and duplicate tracking.
+                self._tactile = TactileCache(self.side, self._stamp_clock)
                 self._hand.set_tactile_callback(self._tactile.receive)
             settings = () if self.read_only else (
                 ('set_control_mode', sdk.ControlMode.POSITION),
