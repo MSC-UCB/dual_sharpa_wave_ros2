@@ -1,6 +1,7 @@
 """Offline SDK test doubles. Never import the official SDK or discover devices."""
 
 from types import SimpleNamespace
+import json
 
 import pytest
 
@@ -13,7 +14,10 @@ class FakeSdk:
         self.degrees = [float(i) for i in range(22)]
         self.devices = ['unrelated-device', 'RIGHT-SERIAL', 'LEFT-SERIAL']
         self.now = 0.0
-        self.ControlMode = SimpleNamespace(POSITION='POSITION')
+        self.ControlMode = SimpleNamespace(POSITION='POSITION', MIT='MIT')
+        self.mode = 'POSITION'
+        self.parameters = {'force_feedback_source': 0, 'mit_kp': [8.0] * 22,
+                           'mit_kd': [0.1] * 22}
         self.ControlSource = SimpleNamespace(SDK='SDK')
         self.SharpaWaveManager = SimpleNamespace(get_instance=lambda: self)
 
@@ -45,7 +49,18 @@ class FakeSdk:
                                message='injected status')
 
     def set_control_mode(self, value):
+        self.mode = value
         return self.status('mode', value)
+
+    def get_control_mode(self):
+        return self.status('read_mode'), self.mode
+
+    def get_parameter(self, names):
+        return self.status('parameters', list(names)), json.dumps(
+            {name: self.parameters[name] for name in names if name in self.parameters})
+
+    def set_mit_control(self, positions, velocities, torques):
+        return self.status('mit_write', list(positions), list(velocities), list(torques))
 
     def set_speed_coeff(self, value):
         return self.status('speed', value)

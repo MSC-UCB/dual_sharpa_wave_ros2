@@ -9,7 +9,6 @@ Exiting stops new commands; it does not disable the hardware or emergency-stop i
 
 import argparse
 import math
-from pathlib import Path
 import sys
 import time
 
@@ -32,18 +31,13 @@ class ZeroMove:
         if any(len(q) != JOINT_COUNT or not all(math.isfinite(v) for v in q)
                for q in self.starts.values()):
             raise ValueError('Expected 22 finite positions for each hand')
-        distance = max(abs(v) for q in self.starts.values() for v in q)
-        self.duration = max(minimum_duration, 1.875 * distance / speed,
-                            math.sqrt(10 / math.sqrt(3) * distance / acceleration))
+        from dual_sharpa_wave.zero_trajectory import zero_duration
+        self.duration = zero_duration([v for q in self.starts.values() for v in q],
+                                      minimum_duration, speed, acceleration)
 
     def sample(self, elapsed):
-        if not math.isfinite(elapsed):
-            raise ValueError('Elapsed time must be finite')
-        u = min(1., max(0., elapsed / self.duration))
-        if u == 1.:
-            return default_targets()
-        blend = u**3 * (10 + u * (-15 + 6 * u))
-        return {side: [(1 - blend) * v for v in q] for side, q in self.starts.items()}
+        from dual_sharpa_wave.zero_trajectory import zero_sample
+        return {side: zero_sample(q, elapsed, self.duration) for side, q in self.starts.items()}
 
 
 def parse_args(argv=None):
@@ -65,14 +59,32 @@ def parse_args(argv=None):
     return args
 
 
-def run(node, args, limits, spin_once, ok):
-    """Coordinate an existing CommandClient; also usable with offline fake IO."""
-    from dual_sharpa_wave.control_model import bounded_positions
+def pose_error_summary(positions, targets, tolerance_deg):
+    """Report actual joint errors without changing the arrival criterion."""
+    from dual_sharpa_wave.joint_names import joint_names
 
-    targets = {side: bounded_positions(side, q, limits) for side, q in default_targets().items()}
+    summaries = []
+    for side in SIDES:
+        errors = [math.degrees(abs(q - goal))
+                  for q, goal in zip(positions[side], targets[side])]
+        worst = max(range(JOINT_COUNT), key=errors.__getitem__)
+        outside = sum(error > tolerance_deg for error in errors)
+        summaries.append(f'{side}: {outside}/22 outside {tolerance_deg:g} deg, '
+                         f'worst={joint_names(side)[worst]} error={errors[worst]:.3f} deg '
+                         f'actual={math.degrees(positions[side][worst]):.3f} deg '
+                         f'target={math.degrees(targets[side][worst]):.3f} deg')
+    return '; '.join(summaries)
+
+
+def run(node, args, spin_once, ok):
+    """Coordinate an existing CommandClient; also usable with offline fake IO."""
+    from dual_sharpa_wave.joint_validation import validate_positions
+
+    targets = default_targets()
     deadline = time.monotonic() + args.wait_timeout
     plan = None
     started = settled = last_sent = None
+    last_settle_report = None
     next_tick = time.monotonic()
     node.get_logger().info('Waiting for both hands: fresh feedback and command subscribers')
     while ok():
@@ -86,17 +98,20 @@ def run(node, args, limits, spin_once, ok):
         if plan is None:
             if not all(node.ready(s) for s in SIDES):
                 if now >= deadline:
-                    raise TimeoutError('Timed out waiting for both hands')
+                    waiting = ', '.join(side for side in SIDES if not node.ready(side))
+                    raise TimeoutError(f'Timed out waiting for both hands; not ready: {waiting}. '
+                                       'Need fresh feedback and a joint_command subscriber; '
+                                       'check driver logs for a stopped/faulted SDK session')
                 next_tick = now + 1 / args.rate
                 continue
-            starts = {s: bounded_positions(s, node.positions[s], limits) for s in SIDES}
+            starts = {s: validate_positions(node.positions[s]) for s in SIDES}
             plan = ZeroMove(starts, args.minimum_duration, math.radians(args.max_speed_deg_s),
                             math.radians(args.max_accel_deg_s2))
             started = next_tick = now
             node.get_logger().info(f'Moving both hands to zero over {plan.duration:.2f} s')
         node.require_ready()
         for side in SIDES:
-            bounded_positions(side, node.positions[side], limits)
+            validate_positions(node.positions[side])
         if last_sent is not None and now - last_sent > args.state_timeout:
             raise RuntimeError('Command publication loop stalled')
         if now < next_tick:
@@ -106,6 +121,10 @@ def run(node, args, limits, spin_once, ok):
         last_sent = now
         next_tick = now + 1 / args.rate
         if elapsed >= plan.duration:
+            if last_settle_report is None or now - last_settle_report >= 1.0:
+                node.get_logger().info('Settling: ' + pose_error_summary(
+                    node.positions, targets, args.tolerance_deg))
+                last_settle_report = now
             reached = all(abs(q - goal) <= math.radians(args.tolerance_deg)
                           for s in SIDES for q, goal in zip(node.positions[s], targets[s]))
             settled = (now if settled is None else settled) if reached else None
@@ -113,23 +132,26 @@ def run(node, args, limits, spin_once, ok):
                 node.get_logger().info('Both hands reached default pose; finished sending.')
                 return 0
             if elapsed > plan.duration + args.settle_timeout:
-                raise TimeoutError('Both hands did not settle at the default pose in time')
+                raise TimeoutError('Both hands did not settle at the default pose in time. '
+                                   + pose_error_summary(node.positions, targets, args.tolerance_deg)
+                                   + f'; required continuous hold={args.hold_time:g} s')
     return 1
 
 
 def execute(args):
     import rclpy
     from rclpy.executors import ExternalShutdownException
-    from ament_index_python.packages import get_package_share_directory
-    from dual_sharpa_wave.control_model import load_limits
     from dual_sharpa_wave.control_ros import CommandClient
+    from dual_sharpa_wave.recovery_client import driver_modes, recover_both
 
-    limits = load_limits(Path(get_package_share_directory('dual_sharpa_wave')))
     node = None
     rclpy.init(args=[])
     try:
-        node = CommandClient('sharpa_move_to_default_pose', limits, args.state_timeout)
-        return run(node, args, limits, rclpy.spin_once, rclpy.ok)
+        node = CommandClient('sharpa_move_to_default_pose', None, args.state_timeout)
+        mode = driver_modes(node, args.wait_timeout, rclpy.spin_once, rclpy.ok)
+        if mode == 'mit':
+            return recover_both(node, args, rclpy.spin_once, rclpy.ok)
+        return run(node, args, rclpy.spin_once, rclpy.ok)
     except (KeyboardInterrupt, ExternalShutdownException):
         print('Interrupted: stopped new targets; this is not a hardware stop.', file=sys.stderr)
         return 130

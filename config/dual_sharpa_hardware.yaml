@@ -1,8 +1,10 @@
 # Confirmed by Sharpa SDK discovery on 2026-09-22.
+# Legacy POSITION configuration; hardware launch now defaults to dual_sharpa_mit.yaml.
 /sharpa/left_hand/hand_node:
   ros__parameters:
     side: left
     backend: sharpa_sdk
+    control_mode: position
     serial_number: "CD52943BCD53"
     tactile_enabled: true
     tactile_publish_rate_hz: 30.0
@@ -16,6 +18,7 @@
   ros__parameters:
     side: right
     backend: sharpa_sdk
+    control_mode: position
     serial_number: "C956943BC957"
     tactile_enabled: true
     tactile_publish_rate_hz: 30.0

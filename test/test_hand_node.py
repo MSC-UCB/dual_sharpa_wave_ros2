@@ -145,3 +145,74 @@ def test_real_hardware_adapter_with_fake_sdk_uses_shared_ros_node(context, monke
         assert sum(c[0] == 'write' for c in fake_sdk.calls) == writes
     finally:
         subject.destroy_node()
+
+
+def test_mit_node_with_fake_sdk_gains_commands_and_timeout(context, monkeypatch, fake_sdk):
+    from dual_sharpa_wave import sharpa_sdk_hand
+    fake_sdk.degrees = [0.0] * 22
+    monkeypatch.setattr(sharpa_sdk_hand, 'load_sdk', lambda: fake_sdk)
+    settings = dict(backend='sharpa_sdk', serial_number='LEFT-SERIAL',
+                    control_mode='mit', interpolation=False, command_timeout_sec=0.5)
+    subject = hand_node.HandNode(context=context, enable_rosout=False,
+                                parameter_overrides=[Parameter(k, value=v) for k, v in settings.items()])
+    subject._publisher = Mock()
+    now = subject._started_at
+    monkeypatch.setattr(hand_node.time, 'monotonic', lambda: now)
+    subject._backend._clock = lambda: now
+    try:
+        assert ('mode', 'MIT') in fake_sdk.calls
+        assert subject._backend.mit_settings['torque_source'] == 0
+        assert not any(c[0] == 'mit_write' for c in fake_sdk.calls)
+        # First command acquires the measured pose. Then accept named/reordered targets.
+        subject._on_command(JointState(position=[0.0] * 22))
+        now += 0.01
+        fake_sdk.now += 0.01
+        target = [0.0] * 22
+        target[0] = 0.05
+        subject._on_command(JointState(name=list(reversed(subject.names)), position=list(reversed(target))))
+        assert fake_sdk.calls[-1][0] == 'mit_write'
+        assert fake_sdk.calls[-1][1] == target
+        accepted_at = subject._last_command
+        calls = len(fake_sdk.calls)
+        subject._on_command(JointState(position=target, effort=[0.0] * 22))
+        subject._on_command(JointState(position=target, velocity=[0.0] * 22))
+        subject._on_command(JointState(position=[float('nan')] * 22))
+        assert subject._last_command == accepted_at
+        assert len(fake_sdk.calls) == calls
+        # Feedback timer must not resend commands or refresh command age.
+        subject._on_timer()
+        assert list(subject._publisher.publish.call_args.args[0].position) == [0.0] * 22
+        assert sum(c[0] == 'mit_write' for c in fake_sdk.calls) == 2
+        now += 0.51
+        subject._on_timer()
+        assert not any(c[0] in ('stop', 'disconnect') for c in fake_sdk.calls)
+        assert subject.timed_out
+        assert subject._publisher.publish.call_count == 2
+        assert sum(c[0] == 'mit_write' for c in fake_sdk.calls) == 2
+        fake_sdk.degrees = [1.0] * 22
+        now += 60
+        subject._on_timer()
+        assert list(subject._publisher.publish.call_args.args[0].position) == pytest.approx(
+            [sharpa_sdk_hand.math.radians(1.0)] * 22)
+        subject._on_command(JointState(position=[0.0] * 22))
+        assert not subject.timed_out
+        assert fake_sdk.calls[-1][1] == pytest.approx([sharpa_sdk_hand.math.radians(1.0)] * 22)
+        subject._on_command(JointState(position=target))
+        assert fake_sdk.calls[-1][1] == target
+    finally:
+        subject.destroy_node()
+
+
+@pytest.mark.parametrize('settings', [
+    {'control_mode': 'invalid'},
+    {'control_mode': 'mit', 'interpolation': True},
+    {'control_mode': 'mit', 'interpolation': False, 'command_timeout_sec': 0.0},
+    {'control_mode': 'mit', 'interpolation': False, 'mit_start_tolerance_rad': float('nan')},
+])
+def test_invalid_mit_node_settings_precede_backend(context, monkeypatch, settings):
+    backend = Mock()
+    monkeypatch.setattr(hand_node, 'create_backend', backend)
+    with pytest.raises(ValueError):
+        hand_node.HandNode(context=context, enable_rosout=False,
+                          parameter_overrides=[Parameter(k, value=v) for k, v in settings.items()])
+    backend.assert_not_called()

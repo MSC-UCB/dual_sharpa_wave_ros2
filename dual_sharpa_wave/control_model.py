@@ -6,7 +6,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 from .joint_names import JOINT_SUFFIXES, joint_names
-from .joint_validation import validate_positions
+from .joint_validation import bounded_joint_positions, validate_positions
 
 SIDES = ('left', 'right')
 
@@ -41,11 +41,7 @@ def load_limits(share: Path):
 
 
 def bounded_positions(side, positions, limits):
-    result = validate_positions(positions)
-    for name, value, (lo, hi) in zip(joint_names(side), result, limits[side]):
-        if not lo <= value <= hi:
-            raise ValueError(f'{name}: {value:.5f} rad outside [{lo}, {hi}]')
-    return result
+    return bounded_joint_positions(positions, limits[side], joint_names(side))
 
 
 @dataclass(frozen=True)

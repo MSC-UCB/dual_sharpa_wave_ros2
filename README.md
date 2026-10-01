@@ -47,12 +47,13 @@ Both sides use RELIABLE, VOLATILE, KEEP_LAST, depth=1 QoS. Continuous control mu
 
 ## Build
 
-Build from the repository root to avoid mixing multiple `install/` trees:
+Place this repository and the `sharpa_control_interfaces` package beside each
+other under the workspace `src/`, then build from the workspace root:
 
 ```bash
-cd ~/ws_fanuc/dual_sharpa_wave_ros2
+cd ~/ws_fanuc
 source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --packages-select dual_sharpa_wave
+colcon build --symlink-install --packages-up-to dual_sharpa_wave
 source install/setup.bash
 ```
 
@@ -110,7 +111,10 @@ ROS and the SDK both use Python 3.12. There is no need to copy the SDK into the 
 
 ## Real hardware configuration
 
-The hardware configuration is [config/dual_sharpa_hardware.yaml](config/dual_sharpa_hardware.yaml). It contains the serial numbers confirmed by SDK discovery:
+Real hardware defaults to MIT using [config/dual_sharpa_mit.yaml](config/dual_sharpa_mit.yaml).
+The legacy POSITION configuration remains available as
+[config/dual_sharpa_hardware.yaml](config/dual_sharpa_hardware.yaml).
+Both contain the serial numbers confirmed by SDK discovery:
 
 ```yaml
 # left:  CD52943BCD53, 192.168.10.10
@@ -127,6 +131,12 @@ After setting up the SDK environment:
 export ROS_LOG_DIR=/tmp/dual_sharpa_wave_logs
 ros2 launch dual_sharpa_wave dual_sharpa.launch.py backend:=sharpa_sdk use_rviz:=false
 ```
+
+This starts MIT control using the gains saved in Pilot. To explicitly select
+POSITION, add `control_mode:=position`. An explicit `config_file` keeps its own
+settings unless you also supply a control-mode override. The mock backend remains
+POSITION by default. Starting writable hardware control configures the mode and
+enables motors; use `read_only:=true` for feedback-only operation.
 
 Normal logs include:
 
@@ -145,7 +155,7 @@ ros2 topic echo /sharpa/left_hand/joint_states sensor_msgs/msg/JointState
 ros2 topic echo /sharpa/right_hand/joint_states sensor_msgs/msg/JointState
 ```
 
-Before the first command, `Command timeout: no new target sent` is expected. The node waits for a command and does not close the hardware connection just because it is waiting.
+Before the first command, `Waiting for first joint command; no target sent` is expected. The node waits for a command and does not close the hardware connection just because it is waiting.
 
 ## Tactile viewer (OpenCV)
 
@@ -219,17 +229,26 @@ Useful overrides include `--range-scale 0.5`, `--cycles 1`, and
 starting pose for the skipped joints, and returns both hands to their starting
 pose after the motion.
 
-For a new real hand setup, first use the GUI for a single-side, single-joint, small-amplitude test. Then use the waveform tools. All positions must be within the URDF joint limits.
+For a new real hand setup, first use the GUI for a single-side, single-joint, small-amplitude test. Then use the waveform tools. These GUI/waveform tools require positions within the URDF joint limits. The MIT adapter clips outgoing targets to those limits while preserving raw feedback.
 
 ## Control semantics
+
+MIT is the default when launching `backend:=sharpa_sdk` without a custom YAML.
+This selects `config/dual_sharpa_mit.yaml`, reads the gains saved in Pilot, and
+sends positions through `set_mit_control` with zero target velocity and zero
+feedforward torque. See [MIT setup and operator test steps](docs/mit_control.md).
+Hardware motion through this ROS path has not yet been tested; both hands' saved
+gains and current MIT mode were verified through read-only SDK connections.
 
 - A command must contain 22 finite position values. NaN, Inf, and 21/23-value commands are rejected.
 - An empty `name` array means canonical joint order. With names, the node validates and reorders the command.
 - State comes from the backend's actual position readback; the last target is never used as fabricated feedback.
-- The mock default command timeout is 0.5 seconds; the real hardware configuration sets it to `0.0`, so the SDK session remains connected until the launch/node is closed.
+- The mock default command timeout is 0.5 seconds; the position-mode hardware configuration sets it to `0.0`, so the SDK session remains connected until the launch/node is closed.
+- MIT treats a 0.5 s command gap as idle: the SDK session and feedback remain active. The next command reacquires the measured pose with the initial 0.1 rad target check; normal pauses do not require a restart. Idle does not disable motors or clear the last MIT target. SDK faults still close and latch the session.
+- Actual MIT feedback outside the model by more than 0.5 degrees latches ordinary control without disconnecting. Run the existing default-pose script with `--execute` to request the dedicated recovery action. Successful recovery unlocks control; cancellation or settling failure keeps it locked. Persistent worsening during recovery or SDK errors close the session. See [recovery behavior and configuration](docs/mit_control.md).
 - Mock commands update the reported joint positions immediately; there is no mock joint speed limit.
 - Mock timeout keeps the last position and continues publishing it.
-- With the provided real hardware configuration, no command timeout is enabled; closing the launch/node performs the SDK stop and disconnect.
+- With the provided position-mode hardware configuration, no command timeout is enabled; closing the launch/node performs the SDK stop and disconnect.
 - SDK `stop()` is not a validated physical emergency stop.
 
 ## Joint order
@@ -258,6 +277,7 @@ RViz is only a model preview. It is not a physics simulator or a CRX flange cali
 - `dual_sharpa_wave/mock_hand.py`: mock backend.
 - `dual_sharpa_wave/sharpa_sdk_hand.py`: Sharpa SDK adapter.
 - `launch/dual_sharpa.launch.py`: unified mock/hardware launch file; switch with `backend:=mock` or `backend:=sharpa_sdk`.
-- `config/dual_sharpa_hardware.yaml`: hardware serials and parameters.
+- `config/dual_sharpa_mit.yaml`: default hardware MIT serials and parameters.
+- `config/dual_sharpa_hardware.yaml`: explicit legacy POSITION configuration.
 - [docs/hardware.md](docs/hardware.md): SDK adapter details.
 - [realrobotplan.md](realrobotplan.md): hardware investigation and implementation record.

@@ -30,8 +30,18 @@ def _hand_actions(context, backend: str, config: Path):
         raise FileNotFoundError(f'config_file does not exist: {config}')
     rate = LaunchConfiguration('publish_rate_hz').perform(context)
     actions = []
+    selected = LaunchConfiguration('hands', default='both').perform(context)
+    mode = LaunchConfiguration('control_mode', default='').perform(context)
+    if selected not in ('both', 'left', 'right'):
+        raise ValueError('hands must be both, left or right')
+    if mode not in ('', 'position', 'mit'):
+        raise ValueError('control_mode must be position or mit')
     for side in ('left', 'right'):
+        if selected != 'both' and side != selected:
+            continue
         overrides = {'side': side, 'backend': backend}
+        if mode:
+            overrides['control_mode'] = mode
         read_only = LaunchConfiguration('read_only', default='false').perform(context)
         if read_only not in ('true', 'false'):
             raise ValueError('read_only must be true or false')
@@ -102,10 +112,10 @@ def _actions(context):
     if supplied_config:
         config = Path(supplied_config)
     else:
-        filename = (
-            'dual_sharpa_hardware.yaml'
-            if backend == 'sharpa_sdk' else 'dual_sharpa_wave.yaml'
-        )
+        mode = LaunchConfiguration('control_mode', default='').perform(context)
+        filename = 'dual_sharpa_wave.yaml'
+        if backend == 'sharpa_sdk':
+            filename = 'dual_sharpa_hardware.yaml' if mode == 'position' else 'dual_sharpa_mit.yaml'
         config = share / 'config' / filename
 
     if backend == 'sharpa_sdk':
@@ -120,6 +130,14 @@ def generate_launch_description():
             default_value='mock',
             choices=['mock', 'sharpa_sdk'],
             description='Use mock or real Sharpa SDK backend',
+        ),
+        DeclareLaunchArgument(
+            'control_mode', default_value='', choices=['', 'position', 'mit'],
+            description='Hardware defaults to MIT, mock to position; custom YAML is preserved unless overridden',
+        ),
+        DeclareLaunchArgument(
+            'hands', default_value='both', choices=['both', 'left', 'right'],
+            description='Start both hand nodes or only the selected side',
         ),
         DeclareLaunchArgument(
             'config_file',

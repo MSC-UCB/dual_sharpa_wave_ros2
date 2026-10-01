@@ -61,3 +61,18 @@ def test_feedback_reorders_by_name(client):
     client.on_state('left', JointState(name=list(reversed(joint_names('left'))),
                                       position=list(reversed([float(i) for i in range(22)]))))
     assert client.positions['left'] == list(range(22))
+
+
+def test_no_model_limits_preserves_targets_but_rejects_malformed_pair(client):
+    client.limits = None  # Default-pose sender uses this configuration.
+    targets = {'left': [0.0] * 22, 'right': [0.0] * 22}
+    targets['right'][17] = .26405816452245695
+    targets['left'][7] = -.002
+    client.send(targets)
+    for side in targets:
+        assert list(client.command_publishers[side].publish.call_args.args[0].position) == targets[side]
+    targets['right'][17] = float('nan')
+    with pytest.raises(ValueError):
+        client.send(targets)
+    for publisher in client.command_publishers.values():
+        assert publisher.publish.call_count == 1

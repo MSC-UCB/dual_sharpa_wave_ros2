@@ -51,8 +51,8 @@ def test_bad_cli(option, value):
         motion.parse_args(['--' + option, value])
 
 
-@pytest.mark.parametrize('mode', ['success', 'stale', 'competing', 'missing', 'stuck',
-                                 'bad_feedback', 'lost_subscriber', 'out_of_limits'])
+@pytest.mark.parametrize('mode', ['success', 'overshoot', 'stale', 'competing', 'missing', 'stuck',
+                                 'bad_feedback', 'lost_subscriber', 'nonfinite'])
 def test_lifecycle(monkeypatch, mode):
     clock, sent = [0.], []
     monkeypatch.setattr(motion.time, 'monotonic', lambda: clock[0])
@@ -81,18 +81,40 @@ def test_lifecycle(monkeypatch, mode):
         assert clock[0] < 20, 'Failed to terminate'
         if mode == 'bad_feedback':
             node.feedback_errors['left'] = 'Malformed feedback'
-        if mode == 'out_of_limits':
-            node.positions['right'] = [99.] * 22
+        if mode == 'nonfinite':
+            node.positions['right'] = [float('nan')] * 22
+        if mode == 'overshoot' and clock[0] < .12:
+            # Measured overshoot persists across the initial recovery ticks.
+            node.positions['right'][17] = .26405816452245695
+            node.positions['left'][7] = -.002
 
     args = motion.parse_args(['--execute', '--minimum-duration', '.2', '--hold-time', '.1',
         '--wait-timeout', '.3', '--settle-timeout', '.3', '--tolerance-deg', '.01'])
-    if mode == 'success':
-        assert motion.run(FakeClient(), args, limits, spin, lambda: True) == 0
+    if mode in ('success', 'overshoot'):
+        assert motion.run(FakeClient(), args, spin, lambda: True) == 0
         assert sent[-1] == motion.default_targets()
+        if mode == 'overshoot':
+            assert sent[0]['right'][17] == .26405816452245695
+            assert sent[0]['left'][7] == -.002
+            assert all(a['right'][17] >= b['right'][17] for a, b in zip(sent, sent[1:]))
     else:
         expected = (TimeoutError if mode in ('missing', 'stuck') else
-                    ValueError if mode == 'out_of_limits' else RuntimeError)
-        with pytest.raises(expected):
-            motion.run(FakeClient(), args, limits, spin, lambda: True)
-        if mode in ('competing', 'missing', 'bad_feedback', 'out_of_limits'):
+                    ValueError if mode == 'nonfinite' else RuntimeError)
+        with pytest.raises(expected) as failure:
+            motion.run(FakeClient(), args, spin, lambda: True)
+        if mode == 'missing':
+            assert 'not ready: left, right' in str(failure.value)
+        if mode == 'stuck':
+            assert 'left_thumb_CMC_FE error=5.730 deg' in str(failure.value)
+            assert '22/22 outside 0.01 deg' in str(failure.value)
+        if mode in ('competing', 'missing', 'bad_feedback', 'nonfinite'):
             assert not sent
+
+
+def test_pose_error_summary_reports_each_side_and_degree_units():
+    positions = motion.default_targets()
+    positions['left'][8] = motion.math.radians(3.5)
+    positions['right'][1] = motion.math.radians(-4.0)
+    summary = motion.pose_error_summary(positions, motion.default_targets(), 2.0)
+    assert 'left: 1/22 outside 2 deg, worst=left_index_DIP error=3.500 deg' in summary
+    assert 'right: 1/22 outside 2 deg, worst=right_thumb_CMC_AA error=4.000 deg actual=-4.000 deg' in summary

@@ -1,5 +1,6 @@
 from pathlib import Path
 import math
+import struct
 
 import pytest
 
@@ -18,6 +19,32 @@ def limits():
 @pytest.fixture
 def baseline():
     return {'left': [0.02] * 22, 'right': [0.03] * 22}
+
+
+@pytest.mark.parametrize('side', SIDES)
+def test_boundary_roundoff_snaps_without_mutating_input(limits, side):
+    positions = [0.02] * 22
+    positions[18] = -0.1745329300574517  # Reported SDK degree/radian round trip.
+    positions[19] = limits[side][19][1] + 5e-8
+    original = positions.copy()
+    result = bounded_positions(side, positions, limits)
+    assert result[18] == limits[side][18][0]
+    assert result[19] == limits[side][19][1]
+    assert result[:18] == original[:18]
+    assert positions == original
+    for bound_index in (0, 1):
+        values = [struct.unpack('f', struct.pack('f', bounds[bound_index]))[0]
+                  for bounds in limits[side]]
+        result = bounded_positions(side, values, limits)
+        assert all(lo <= q <= hi for q, (lo, hi) in zip(result, limits[side]))
+
+
+@pytest.mark.parametrize('offset', [-2e-7, 2e-7])
+def test_real_boundary_overrun_is_rejected(limits, offset):
+    positions = [0.02] * 22
+    positions[18] = limits['left'][18][int(offset > 0)] + offset
+    with pytest.raises(ValueError, match='left_pinky_MCP_FE.*outside'):
+        bounded_positions('left', positions, limits)
 
 
 def test_sine_endpoints_and_step_plateaus():

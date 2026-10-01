@@ -7,12 +7,13 @@ from sensor_msgs.msg import JointState
 
 from .control_model import SIDES, bounded_positions, positive
 from .joint_names import joint_names
-from .joint_validation import canonical_positions
+from .joint_validation import canonical_positions, validate_positions
 from .qos import hand_qos
 
 
 class CommandClient(Node):
     def __init__(self, name, limits, state_timeout=1.0, **kwargs):
+        """With limits=None, validate message shape/finite values without clipping."""
         super().__init__(name, **kwargs)
         self.limits = limits
         self.state_timeout = positive(state_timeout, 'state-timeout')
@@ -55,7 +56,8 @@ class CommandClient(Node):
     def send(self, targets):
         self.require_ready(targets)
         # Validate both sides before publishing either one.
-        checked = {s: bounded_positions(s, q, self.limits) for s, q in targets.items()}
+        checked = {s: (validate_positions(q) if self.limits is None
+                       else bounded_positions(s, q, self.limits)) for s, q in targets.items()}
         stamp = self.get_clock().now().to_msg()
         for side, positions in checked.items():
             msg = JointState()
