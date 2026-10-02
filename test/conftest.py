@@ -59,6 +59,13 @@ class FakeSdk:
         return self.status('parameters', list(names)), json.dumps(
             {name: self.parameters[name] for name in names if name in self.parameters})
 
+    def set_parameter(self, payload):
+        values = json.loads(payload)
+        status = self.status('gain_write', values)
+        if not status.code:
+            self.parameters.update(values)
+        return status
+
     def set_mit_control(self, positions, velocities, torques):
         return self.status('mit_write', list(positions), list(velocities), list(torques))
 

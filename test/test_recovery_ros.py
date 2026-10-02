@@ -22,7 +22,7 @@ from dual_sharpa_wave.sharpa_sdk_hand import SharpaSdkHand
 
 
 @pytest.fixture
-def system(monkeypatch):
+def system(monkeypatch, request):
     ctx = Context()
     rclpy.init(context=ctx, domain_id=183)
     executor = SingleThreadedExecutor(context=ctx)
@@ -33,7 +33,7 @@ def system(monkeypatch):
         side = parameters['side']
         sdk = FakeSdk()
         sdk.degrees = [0.] * 22
-        sdk.degrees[17] = 16.
+        sdk.degrees[17] = getattr(request, 'param', 21.)
         sdks[side] = sdk
         return SharpaSdkHand('LEFT-SERIAL', .3, .6, False, control_mode='mit',
                              side=side, sdk_factory=lambda: sdk)
@@ -101,13 +101,14 @@ def test_paired_script_recovers_locked_hands_and_can_repeat(system):
     assert recover_both(s.client, s.args, s.spin, lambda: True) == 0
     for side, node in s.nodes.items():
         assert s.writes(side)[0][1][17] == .2618
-        assert node._recovery._start_positions[17] == math.radians(16.)
+        assert node._recovery._start_positions[17] == math.radians(21.)
         assert node._backend.mit_limits.state == 'normal'
         assert not any(c[0] in ('stop', 'disconnect') for c in s.sdks[side].calls)
     assert recover_both(s.client, s.args, s.spin, lambda: True) == 0
 
 
-def test_no_heartbeat_never_moves_and_does_not_unlock(system):
+@pytest.mark.parametrize('system', [0., 21.], indirect=True)
+def test_no_heartbeat_never_moves_and_preserves_measured_limit_state(system):
     s = system
     action = ActionClient(s.client, RecoverDefault, '/sharpa/left_hand/recover_default')
     heartbeat = s.client.create_publisher(String, '/sharpa/left_hand/recovery_heartbeat', 1)
@@ -120,13 +121,14 @@ def test_no_heartbeat_never_moves_and_does_not_unlock(system):
         assert not result.result().result.success
         assert 'heartbeat' in result.result().result.message
         assert not s.writes('left')
-        assert s.nodes['left']._backend.mit_limits.state == 'limit_locked'
+        expected = 'limit_locked' if s.sdks['left'].degrees[17] > 20. else 'normal'
+        assert s.nodes['left']._backend.mit_limits.state == expected
     finally:
         action.destroy()
         s.client.destroy_publisher(heartbeat)
 
 
-def test_heartbeat_loss_after_start_locks_without_disconnect(system):
+def test_heartbeat_loss_after_start_releases_without_disconnect(system):
     s = system
     action = ActionClient(s.client, RecoverDefault, '/sharpa/left_hand/recover_default')
     heartbeat = s.client.create_publisher(String, '/sharpa/left_hand/recovery_heartbeat', 1)
@@ -144,14 +146,15 @@ def test_heartbeat_loss_after_start_locks_without_disconnect(system):
             s.spin()
         assert len(s.writes('left')) == count
         assert 'heartbeat' in result.result().result.message
-        assert s.nodes['left']._backend.mit_limits.state == 'limit_locked'
+        assert s.nodes['left']._backend.mit_limits.state == 'normal'
         assert not any(c[0] in ('stop', 'disconnect') for c in s.sdks['left'].calls)
     finally:
         action.destroy()
         s.client.destroy_publisher(heartbeat)
 
 
-def test_cancel_blocks_ordinary_command_and_second_goal(system):
+@pytest.mark.parametrize('system', [0., 21.], indirect=True)
+def test_cancel_preparation_preserves_limits_and_blocks_commands_while_active(system):
     s = system
     action = ActionClient(s.client, RecoverDefault, '/sharpa/left_hand/recover_default')
     try:
@@ -166,7 +169,8 @@ def test_cancel_blocks_ordinary_command_and_second_goal(system):
         assert not result.result().result.success
         assert 'canceled' in result.result().result.message
         assert not s.writes('left')
-        assert s.nodes['left']._backend.mit_limits.state == 'limit_locked'
+        expected = 'limit_locked' if s.sdks['left'].degrees[17] > 20. else 'normal'
+        assert s.nodes['left']._backend.mit_limits.state == expected
     finally:
         action.destroy()
 
@@ -180,6 +184,7 @@ def test_one_goal_rejected_other_side_never_moves(system):
     assert not s.writes('left') and not s.writes('right')
 
 
+@pytest.mark.parametrize('system', [3.], indirect=True)
 def test_one_sdk_fault_cancels_peer(system):
     s = system
     s.sdks['right'].fail = 'mit_write_status'
@@ -187,19 +192,27 @@ def test_one_sdk_fault_cancels_peer(system):
         recover_both(s.client, s.args, s.spin, lambda: True)
     s.wait(lambda: not s.nodes['left']._recovery.active)
     assert s.nodes['right']._backend.mit_limits.state == 'faulted'
-    assert s.nodes['left']._backend.mit_limits.state == 'limit_locked'
+    assert s.nodes['left']._backend.mit_limits.state == 'normal'
     count = len(s.writes('left'))
     for _ in range(10):
         s.spin()
     assert len(s.writes('left')) == count
 
 
+@pytest.mark.parametrize('system', [3., 21.], indirect=True)
 def test_stuck_feedback_cannot_claim_recovery_success(system):
     s = system
     s.tracking['right'] = False
     with pytest.raises(RuntimeError, match='right.*settling timed out'):
         recover_both(s.client, s.args, s.spin, lambda: True)
-    assert s.nodes['right']._backend.mit_limits.state == 'limit_locked'
+    hand = s.nodes['right']._backend
+    expected = 'limit_locked' if s.sdks['right'].degrees[17] > 20. else 'normal'
+    assert hand.mit_limits.state == expected
+    if expected == 'normal':
+        # Timeout is still reported as failure, but a fresh ordinary command
+        # can take over without first reaching the default pose.
+        hand.set_joint_positions(hand.get_joint_positions())
+        assert not hand._faulted
 
 
 def test_interrupt_active_paired_recovery_cancels_both(system):
@@ -216,7 +229,7 @@ def test_interrupt_active_paired_recovery_cancels_both(system):
     with pytest.raises(KeyboardInterrupt):
         recover_both(s.client, s.args, spin, lambda: True)
     s.wait(lambda: all(not n._recovery.active for n in s.nodes.values()))
-    assert all(n._backend.mit_limits.state == 'limit_locked' for n in s.nodes.values())
+    assert all(n._backend.mit_limits.state == 'normal' for n in s.nodes.values())
     counts = {side: len(s.writes(side)) for side in s.nodes}
     for _ in range(10):
         s.spin()
@@ -237,7 +250,7 @@ def test_read_error_during_recovery_faults_and_cancels_peer(system):
     with pytest.raises(RuntimeError, match='right'):
         recover_both(s.client, s.args, spin, lambda: True)
     s.wait(lambda: not s.nodes['left']._recovery.active)
-    assert s.nodes['left']._backend.mit_limits.state == 'limit_locked'
+    assert s.nodes['left']._backend.mit_limits.state == 'normal'
     assert s.nodes['right']._backend.mit_limits.state == 'faulted'
 
 

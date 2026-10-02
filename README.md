@@ -132,7 +132,10 @@ export ROS_LOG_DIR=/tmp/dual_sharpa_wave_logs
 ros2 launch dual_sharpa_wave dual_sharpa.launch.py backend:=sharpa_sdk use_rviz:=false
 ```
 
-This starts MIT control using the gains saved in Pilot. To explicitly select
+This starts MIT control using the fixed tuning baseline multiplied by
+`mit_kp_ratio` and `mit_kd_ratio` (each defaults to `0.6`, shared by both hands). Each hand writes both gain arrays once before
+control starts, unless readback already matches. Override with
+`mit_kp_ratio:=0.6 mit_kd_ratio:=0.8`; `1.0` restores the original tuning baseline. To explicitly select
 POSITION, add `control_mode:=position`. An explicit `config_file` keeps its own
 settings unless you also supply a control-mode override. The mock backend remains
 POSITION by default. Starting writable hardware control configures the mode and
@@ -234,18 +237,30 @@ For a new real hand setup, first use the GUI for a single-side, single-joint, sm
 ## Control semantics
 
 MIT is the default when launching `backend:=sharpa_sdk` without a custom YAML.
-This selects `config/dual_sharpa_mit.yaml`, reads the gains saved in Pilot, and
+This selects `config/dual_sharpa_mit.yaml`, applies fixed baseline gains ×
+separate `mit_kp_ratio` / `mit_kd_ratio` values once at startup (both default 0.6, no compounding on restart), and
 sends positions through `set_mit_control` with zero target velocity and zero
 feedforward torque. See [MIT setup and operator test steps](docs/mit_control.md).
 Hardware motion through this ROS path has not yet been tested; both hands' saved
 gains and current MIT mode were verified through read-only SDK connections.
+
+For explicit runtime gain edits, run
+`ros2 run dual_sharpa_wave adjust_mit_gains_gui.py --side left` (or `right`),
+click **Read device gains**, edit Kp/Kd or use **Kp ratio** and **Kd ratio**
+(each defaults to 1.0), then **Apply**. Startup and GUI share the hard-coded tuning
+baseline in `mit_gains.py`. Read updates device values only; GUI ratio 1 always
+means the original baseline, even after startup at 0.6. The driver schedules
+two steps (50%, then 100%) on a 200 ms timer. Measured SDK writes take about
+300 ms, giving an estimated total of 0.8–0.9 seconds, not a guaranteed deadline.
+This minimal synchronous tool pauses ROS callbacks; use it for stationary tuning. Same-value writes on both
+hands were verified. See [gain GUI details](docs/mit_control.md) for limitations.
 
 - A command must contain 22 finite position values. NaN, Inf, and 21/23-value commands are rejected.
 - An empty `name` array means canonical joint order. With names, the node validates and reorders the command.
 - State comes from the backend's actual position readback; the last target is never used as fabricated feedback.
 - The mock default command timeout is 0.5 seconds; the position-mode hardware configuration sets it to `0.0`, so the SDK session remains connected until the launch/node is closed.
 - MIT treats a 0.5 s command gap as idle: the SDK session and feedback remain active. The next command reacquires the measured pose with the initial 0.1 rad target check; normal pauses do not require a restart. Idle does not disable motors or clear the last MIT target. SDK faults still close and latch the session.
-- Actual MIT feedback outside the model by more than 0.5 degrees latches ordinary control without disconnecting. Run the existing default-pose script with `--execute` to request the dedicated recovery action. Successful recovery unlocks control; cancellation or settling failure keeps it locked. Persistent worsening during recovery or SDK errors close the session. See [recovery behavior and configuration](docs/mit_control.md).
+- Actual MIT feedback outside the model by more than 5 degrees latches ordinary control without disconnecting. Run the existing default-pose script with `--execute` to request the dedicated recovery action. Successful recovery unlocks control. Cancellation, heartbeat loss or settling failure ends recovery; ordinary control resumes if the measured pose is within the 5-degree limit tolerance. Only measured overshoot causes limit locking. Persistent worsening during recovery or SDK errors close the session. See [recovery behavior and configuration](docs/mit_control.md).
 - Mock commands update the reported joint positions immediately; there is no mock joint speed limit.
 - Mock timeout keeps the last position and continues publishing it.
 - With the provided position-mode hardware configuration, no command timeout is enabled; closing the launch/node performs the SDK stop and disconnect.

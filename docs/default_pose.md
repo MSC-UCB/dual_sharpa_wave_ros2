@@ -40,7 +40,7 @@ Defaults:
 - Wait for both feedback streams and subscribers: up to 15 seconds.
 - Feedback expiry: 0.5 seconds, measured by local receipt time.
 - Arrival: each hand's 22 joints within 2 degrees of zero continuously for 1 second.
-  MIT also requires actual positions within URDF limits plus 0.5 degrees.
+  MIT also requires actual positions within URDF limits plus 5 degrees.
 - Settling timeout after the approach: 15 seconds.
 
 The trajectory starts from original measured positions, including positions
@@ -61,15 +61,17 @@ and the last command is retained. Other driver timeout settings may stop the SDK
 session after sending ends. This script provides no collision or contact checking.
 
 The MIT configuration treats normal command gaps as idle, retaining the SDK
-session and live feedback. Actual feedback outside URDF limits plus 0.5 degrees
+session and live feedback. Actual feedback outside URDF limits plus 5 degrees
 locks ordinary commands, but the explicit recovery action remains available.
 Recovery takes over from fresh feedback even when the hand is limit-locked.
 The 0.1 rad first-target check still applies to ordinary joint commands, not to
 the dedicated driver-owned zero trajectory.
 
 Normal completion unlocks MIT control and needs no driver restart. Ctrl+C,
-client heartbeat loss for 0.5 s, or settling failure cancels recovery and leaves
-ordinary control locked; rerun this script to recover. If one hand fails, the
+client heartbeat loss for 0.5 s, or settling failure ends recovery without itself
+locking ordinary control. Fresh measured overshoot beyond the 5-degree limit
+tolerance still locks; otherwise ordinary control resumes with the existing
+first-target check. The action still reports failure when zero was not reached. If one hand fails, the
 client cancels the other's unfinished goal. A hand that already completed stays
 unlocked. Locks/cancellation do not disable motors or clear the last MIT target.
 Persistent worsening of limit violation during recovery and SDK faults close

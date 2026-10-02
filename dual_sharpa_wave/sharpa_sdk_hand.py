@@ -6,6 +6,7 @@ See docs/hardware.md for source evidence and unverified device behavior.
 
 from collections.abc import Sequence
 import importlib
+import json
 import math
 import time
 
@@ -31,8 +32,8 @@ class SharpaSdkHand(HandInterface):
                  tactile_enabled=False, side='left', stamp_clock=time.time_ns,
                  control_mode='position', mit_start_tolerance_rad=0.1,
                  command_timeout_sec=0.5, joint_limits=None,
-                 joint_limit_tolerance_deg=0.5, recovery_worsening_deg=0.5,
-                 recovery_worsening_sec=0.2):
+                 joint_limit_tolerance_deg=5.0, recovery_worsening_deg=0.5,
+                 recovery_worsening_sec=0.2, mit_kp_ratio=None, mit_kd_ratio=None):
         if not isinstance(serial_number, str) or not serial_number.strip():
             raise ValueError('sharpa_sdk requires an explicit nonempty serial_number')
         for name, value in (('speed_coeff', speed_coeff), ('current_coeff', current_coeff)):
@@ -46,6 +47,11 @@ class SharpaSdkHand(HandInterface):
             raise ValueError('control_mode must be position or mit')
         self.control_mode = control_mode
         self.mit_settings = None
+        from .mit_gains import scaled_gains
+        if (mit_kp_ratio is None) != (mit_kd_ratio is None):
+            raise ValueError('Provide both startup Kp and Kd ratios')
+        self._startup_gains = (None if mit_kp_ratio is None
+                               else scaled_gains(mit_kp_ratio, mit_kd_ratio))
         self._mit_last_command_at = None
         self._mit_start_tolerance = mit_start_tolerance_rad
         self._command_timeout = command_timeout_sec
@@ -129,6 +135,11 @@ class SharpaSdkHand(HandInterface):
             if self.control_mode == 'mit' and not self.read_only:
                 from .mit_control import read_mit_settings
                 self.mit_settings = read_mit_settings(self._hand)
+                if self._startup_gains is not None:
+                    if self.mit_settings['torque_source'] != 0:
+                        raise BackendError('Startup gain ratio requires current-based MIT')
+                    if not self._gains_match(self._startup_gains, self._canonical_gains(self.mit_settings)):
+                        self._write_gain_parameters(*self._startup_gains)
             settings = () if self.read_only else (
                 ('set_control_mode', sdk.ControlMode.MIT if self.control_mode == 'mit'
                  else sdk.ControlMode.POSITION),
@@ -207,6 +218,57 @@ class SharpaSdkHand(HandInterface):
         except Exception as error:
             self._trip(error)
 
+    def require_gain_write(self):
+        self._require_started(command=True)
+        if self.read_only or self.control_mode != 'mit':
+            raise BackendError('Gain adjustment requires writable MIT mode')
+        if self.mit_limits.state not in ('normal', 'limit_locked'):
+            raise BackendError(f'Gain adjustment unavailable during {self.mit_limits.state}')
+        if self.mit_settings['torque_source'] != 0:
+            raise BackendError('Gain adjustment currently supports current-based MIT only')
+
+    def _canonical_gains(self, settings):
+        from .mit_control import _gain
+        result = []
+        for key in ('mit_kp', 'mit_kd'):
+            value = _gain(settings.get(key), key, (22,))
+            values = value if isinstance(value, list) else [value] * 22
+            result.append([float(values[i]) for i in URDF_TO_SDK_INDEX])
+        return tuple(result)
+
+    def read_mit_gains(self):
+        from .mit_control import read_mit_settings
+        self._require_started()
+        self.mit_settings = read_mit_settings(self._hand)
+        if self.mit_settings['torque_source'] != 0:
+            raise BackendError('Gain adjustment currently supports current-based MIT only')
+        return self._canonical_gains(self.mit_settings)
+
+    def write_mit_gains(self, kp, kd):
+        from .mit_gains import gains
+        kp, kd = gains(kp), gains(kd)
+        self.require_gain_write()
+        return self._write_gain_parameters(kp, kd)
+
+    @staticmethod
+    def _gains_match(wanted, actual):
+        return all(math.isclose(a, b, rel_tol=1e-5, abs_tol=1e-6)
+                   for values, readback in zip(wanted, actual) for a, b in zip(values, readback))
+
+    def _write_gain_parameters(self, kp, kd):
+        """Shared startup/runtime transaction; caller checks mode and write access."""
+        from .mit_control import _read
+        payload = {key: [values[i] for i in SDK_TO_URDF_INDEX]
+                   for key, values in (('mit_kp', kp), ('mit_kd', kd))}
+        # Parameter failures stop the gain transition, not the existing driver.
+        self._status('set_parameter', self._hand.set_parameter(json.dumps(payload)))
+        actual = _read(self._hand, ['mit_kp', 'mit_kd'])
+        readback = self._canonical_gains(actual)
+        self.mit_settings.update(actual)
+        if not self._gains_match((kp, kd), readback):
+            raise BackendError('MIT gain readback differs from requested values')
+        return readback
+
     def begin_recovery(self):
         self._require_started(command=True)
         if self.mit_limits is None:
@@ -222,7 +284,8 @@ class SharpaSdkHand(HandInterface):
 
     def cancel_recovery(self, reason):
         if self.mit_limits is not None and self.mit_limits.state == 'recovering':
-            self.mit_limits.lock(reason)
+            current = self.get_joint_positions()
+            self.mit_limits.cancel(current, self._clock())
         self._mit_last_command_at = None
 
     def finish_recovery(self, tolerance_rad=math.radians(2.0)):

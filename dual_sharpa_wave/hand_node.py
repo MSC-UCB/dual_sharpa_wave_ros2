@@ -33,6 +33,7 @@ def create_backend(parameters: dict) -> HandInterface:
             read_only=parameters['read_only'], tactile_enabled=parameters['tactile_enabled'],
             side=parameters['side'], stamp_clock=parameters['_tactile_stamp_clock'],
             control_mode=parameters['control_mode'],
+            mit_kp_ratio=parameters['mit_kp_ratio'], mit_kd_ratio=parameters['mit_kd_ratio'],
             mit_start_tolerance_rad=parameters['mit_start_tolerance_rad'],
             command_timeout_sec=parameters['command_timeout_sec'],
             joint_limit_tolerance_deg=parameters['joint_limit_tolerance_deg'],
@@ -60,8 +61,9 @@ class HandNode(Node):
                 'sdk_discovery_timeout_sec': 10.0,
                 'read_only': False, 'tactile_enabled': False, 'tactile_publish_rate_hz': 30.0,
                 'control_mode': 'position',
+                'mit_kp_ratio': 0.6, 'mit_kd_ratio': 0.6,
                 'mit_start_tolerance_rad': 0.1,
-                'joint_limit_tolerance_deg': 0.5,
+                'joint_limit_tolerance_deg': 5.0,
                 'recovery_worsening_deg': 0.5, 'recovery_worsening_sec': 0.2,
                 'recovery_client_timeout_sec': 0.5,
             }
@@ -98,7 +100,10 @@ class HandNode(Node):
                 _tactile_stamp_clock=lambda: self.get_clock().now().to_msg()))
             self._backend.start()
             if self.settings['backend'] == 'sharpa_sdk' and self.settings['control_mode'] == 'mit':
-                self.get_logger().info(f'Saved MIT settings (read only): {self._backend.mit_settings}')
+                self.get_logger().info(
+                    f'MIT settings after startup (Kp ratio={self.settings["mit_kp_ratio"]}, '
+                    f'Kd ratio={self.settings["mit_kd_ratio"]}): '
+                    f'{self._backend.mit_settings}')
             self._started_at = self._last_update = time.monotonic()
             self._publisher = self.create_publisher(JointState, 'joint_states', hand_qos())
             self._subscription = None if self.settings['read_only'] else self.create_subscription(
@@ -114,20 +119,29 @@ class HandNode(Node):
                     self, self._backend, self.settings['recovery_client_timeout_sec'])
             # Scheduling and timeout use elapsed steady time, not adjustable ROS time.
             self._steady_clock = Clock(clock_type=ClockType.STEADY_TIME)
+            if self._recovery is not None:
+                from .mit_gain_server import MitGainServer
+                self._gain_server = MitGainServer(self, self._backend, self._steady_clock)
             self._timer = self.create_timer(
                 1.0 / self.settings['publish_rate_hz'], self._on_timer,
                 clock=self._steady_clock,
             )
             self._tactile_publishers = {}
+            self._f6_publishers = {}
             self._tactile_formats = {}
             if self.settings['tactile_enabled']:
                 from .tactile import BLOCKS, FINGERS
+                from std_msgs.msg import Float64MultiArray
                 from rclpy.qos import QoSProfile, ReliabilityPolicy
                 qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT)
                 self._tactile_publishers = {
                     (finger, block): self.create_publisher(
                         Image, f'tactile/{finger}/{block.lower()}', qos)
                     for finger in FINGERS for block in BLOCKS
+                }
+                self._f6_publishers = {
+                    finger: self.create_publisher(Float64MultiArray, f'tactile/{finger}/f6', qos)
+                    for finger in FINGERS
                 }
                 self._tactile_timer = self.create_timer(
                     1.0 / self.settings['tactile_publish_rate_hz'], self._on_tactile_timer,
@@ -220,6 +234,7 @@ class HandNode(Node):
 
     def _on_tactile_timer(self):
         from .tactile import FINGERS, to_image
+        from std_msgs.msg import Float64MultiArray
         frames, error = self._backend.take_tactile_frames()
         if error:
             self._warn('tactile_receive', f'Tactile receive error: {error}')
@@ -236,6 +251,8 @@ class HandNode(Node):
                 self._warn(f'tactile_{frame.channel}_{block}', f'{finger}/{block}: {error}')
             for block, array in frame.blocks.items():
                 self._tactile_publishers[finger, block].publish(to_image(array, frame.stamp))
+            if frame.f6 is not None:
+                self._f6_publishers[finger].publish(Float64MultiArray(data=frame.f6.tolist()))
 
     def destroy_node(self):
         if self._closed:

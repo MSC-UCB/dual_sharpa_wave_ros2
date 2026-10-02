@@ -30,6 +30,7 @@ setup(
         'hand_node = dual_sharpa_wave.hand_node:main',
         'tactile_viewer.py = dual_sharpa_wave.tactile_viewer:main',
         'gui_control.py = dual_sharpa_wave.gui_control:main',
+        'adjust_mit_gains_gui.py = dual_sharpa_wave.mit_gains_gui:main',
         'sine_control.py = dual_sharpa_wave.wave_control:sine_main',
         'step_control.py = dual_sharpa_wave.wave_control:step_main',
     ]},

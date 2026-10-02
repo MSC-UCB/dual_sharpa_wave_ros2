@@ -1,5 +1,5 @@
 # Selecting this config changes the device mode and enables motor control.
-# Pilot gains are READ ONLY. Physical response must be tested by the operator.
+# Startup applies fixed tuning gains * Kp/Kd ratios once, skipping equal readback.
 # command_timeout_sec marks publisher idle: keep the session, re-acquire on resume.
 /sharpa/left_hand/hand_node:
   ros__parameters:
@@ -7,6 +7,8 @@
     backend: sharpa_sdk
     serial_number: "CD52943BCD53"
     control_mode: mit
+    mit_kp_ratio: 0.6
+    mit_kd_ratio: 0.6
     tactile_enabled: true
     tactile_publish_rate_hz: 30.0
     speed_coeff: 0.3
@@ -16,7 +18,7 @@
     command_timeout_sec: 0.5
     sdk_discovery_timeout_sec: 10.0
     mit_start_tolerance_rad: 0.1
-    joint_limit_tolerance_deg: 0.5
+    joint_limit_tolerance_deg: 5.0
     recovery_worsening_deg: 0.5
     recovery_worsening_sec: 0.2
     recovery_client_timeout_sec: 0.5
@@ -26,6 +28,8 @@
     backend: sharpa_sdk
     serial_number: "C956943BC957"
     control_mode: mit
+    mit_kp_ratio: 0.6
+    mit_kd_ratio: 0.6
     tactile_enabled: true
     tactile_publish_rate_hz: 30.0
     speed_coeff: 0.3
@@ -35,7 +39,7 @@
     command_timeout_sec: 0.5
     sdk_discovery_timeout_sec: 10.0
     mit_start_tolerance_rad: 0.1
-    joint_limit_tolerance_deg: 0.5
+    joint_limit_tolerance_deg: 5.0
     recovery_worsening_deg: 0.5
     recovery_worsening_sec: 0.2
     recovery_client_timeout_sec: 0.5

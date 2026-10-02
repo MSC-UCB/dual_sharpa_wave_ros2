@@ -10,7 +10,7 @@ class RecoveryDiverged(RuntimeError):
 
 
 class MitLimits:
-    def __init__(self, limits, names, tolerance_deg=0.5,
+    def __init__(self, limits, names, tolerance_deg=5.0,
                  worsening_deg=0.5, worsening_sec=0.2):
         if (len(limits) != 22 or len(names) != 22 or
                 any(not math.isfinite(lo) or not math.isfinite(hi) or
@@ -78,6 +78,15 @@ class MitLimits:
             raise ValueError('Recovery targets must move monotonically toward zero')
         self._last_target = target
         return target
+
+    def cancel(self, current, now):
+        if self.state != 'recovering':
+            return
+        current = validate_positions(current)
+        self.state, self.reason = 'normal', ''
+        self._last_target = None
+        # Ending recovery is not a fault. Only measured overshoot can relock.
+        self.observe(current, now)
 
     def finish(self, current):
         if self.state != 'recovering' or not self.within_tolerance(current):

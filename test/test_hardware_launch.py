@@ -66,6 +66,7 @@ def test_mit_launch_selects_config_and_one_hand(monkeypatch):
         params = config[f'/sharpa/{side}_hand/hand_node']['ros__parameters']
         assert params['control_mode'] == 'mit'
         assert params['interpolation'] is False
+        assert params['mit_kp_ratio'] == params['mit_kd_ratio'] == .6
         assert params['command_timeout_sec'] > 0
 
 
@@ -79,6 +80,17 @@ def test_mode_from_custom_yaml_is_not_overridden(tmp_path, monkeypatch):
     assert overrides['side'] == 'right'
     assert overrides['read_only'] is True
     assert 'control_mode' not in overrides
+    assert 'mit_kp_ratio' not in overrides and 'mit_kd_ratio' not in overrides
+
+
+def test_gain_ratio_override_reaches_both_nodes(monkeypatch):
+    ctx = LaunchContext()
+    ctx.launch_configurations.update(publish_rate_hz='', mit_kp_ratio='0.6', mit_kd_ratio='0.8')
+    monkeypatch.setattr(launch_file, 'Node', lambda **kwargs: kwargs)
+    actions = launch_file._hand_actions(ctx, 'sharpa_sdk', LAUNCH_PATH.parents[1] / 'config/dual_sharpa_mit.yaml')
+    assert len(actions) == 2
+    assert all(action['parameters'][1]['mit_kp_ratio'] == .6 for action in actions)
+    assert all(action['parameters'][1]['mit_kd_ratio'] == .8 for action in actions)
 
 
 @pytest.mark.parametrize('backend,mode,filename', [

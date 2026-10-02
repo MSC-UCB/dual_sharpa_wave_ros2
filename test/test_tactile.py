@@ -46,6 +46,48 @@ def test_cache_owns_data_bounded_latest_and_no_repeat():
     assert cache.drain() == ([], None)
 
 
+@pytest.mark.parametrize('side,channel', [('left', 5), ('right', 0)])
+def test_f6_cache_and_publication_without_ros_node(side, channel):
+    cache = TactileCache(side, lambda: Time(sec=7))
+    payload = frame(channel=channel)
+    payload['content']['F6'] = [3., 4., 0., 1., 2., 3.]
+    payload['shape'] = {'F6': [1, 1, 6]}
+    cache.receive(payload)
+    payload['content']['F6'][0] = 99.
+    subject = hand_node.HandNode.__new__(hand_node.HandNode)
+    subject._backend = NS(take_tactile_frames=cache.drain)
+    subject._tactile_formats = {}
+    subject._tactile_publishers = {('pinky', 'DIST_FORCE'): Mock()}
+    subject._f6_publishers = {'pinky': Mock()}
+    subject.get_logger = Mock(return_value=Mock())
+    subject._warn = Mock()
+    hand_node.HandNode._on_tactile_timer(subject)
+    hand_node.HandNode._on_tactile_timer(subject)
+    publisher = subject._f6_publishers['pinky']
+    publisher.publish.assert_called_once()
+    assert list(publisher.publish.call_args.args[0].data) == [3., 4., 0., 1., 2., 3.]
+    payload['ts'] = 2.
+    del payload['content']['F6']
+    cache.receive(payload)
+    hand_node.HandNode._on_tactile_timer(subject)
+    publisher.publish.assert_called_once()
+
+
+@pytest.mark.parametrize('value,shape', [([1.] * 5, [1, 1, 6]),
+                                        ([float('nan')] * 6, [1, 1, 6]),
+                                        ([float('inf')] * 6, [1, 1, 6]),
+                                        ([1.] * 6, [1, 1, 7])])
+def test_invalid_f6_preserves_heatmap(value, shape):
+    cache = TactileCache('left')
+    payload = frame()
+    payload['content']['F6'] = value
+    payload['shape'] = {'F6': shape}
+    cache.receive(payload)
+    result = cache.drain()[0][0]
+    assert result.f6 is None and 'F6' in result.errors
+    assert 'DIST_FORCE' in result.blocks
+
+
 def test_cache_wrong_side_and_malformed_blocks_are_not_zero_frames():
     cache = TactileCache('left')
     cache.receive(frame(channel=0))

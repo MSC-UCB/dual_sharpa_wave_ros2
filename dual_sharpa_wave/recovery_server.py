@@ -63,10 +63,12 @@ class RecoveryServer:
         if goal is None:
             return
         if not success:
-            self.backend.cancel_recovery(message)
-            # A canceled preparation is also a locked session; no implicit teleop resume.
-            if self.backend.mit_limits.state == 'normal':
-                self.backend.mit_limits.lock(message)
+            try:
+                self.backend.cancel_recovery(message)
+            except Exception as error:
+                # Fresh feedback failure retains the SDK fault, but still ends
+                # the action and releases ownership of ordinary commands.
+                message = f'{message}; {error}'
         self.node._last_command = None
         self.node.timed_out = False
         self.node._started_at = time.monotonic()
@@ -90,7 +92,7 @@ class RecoveryServer:
             return
         last_seen = self._heartbeat_at if self._heartbeat_at is not None else self._accepted_at
         if now - last_seen > self.client_timeout:
-            self._finish(False, 'Recovery client heartbeat expired; session remains locked')
+            self._finish(False, 'Recovery client heartbeat expired; recovery ended')
             return
         if self._heartbeat_at is None:
             return  # No motion until the client has accepted both hand goals.
@@ -132,7 +134,7 @@ class RecoveryServer:
                     self._finish(False, 'Default pose/limit settling timed out; '
                                  f'{self.backend.mit_limits.names[worst]} '
                                  f'zero error={math.degrees(abs(current[worst])):.3f} deg; '
-                                 f'max limit violation={violation:.3f} deg; session remains locked')
+                                 f'max limit violation={violation:.3f} deg; recovery ended')
         except Exception as error:
             self._finish(False, str(error))
 

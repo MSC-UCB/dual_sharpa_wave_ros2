@@ -19,6 +19,18 @@ def channels(side):
     return range(5, 10) if side == 'left' else range(5)
 
 
+def f6_array(value, shape=None):
+    """Copy six finite SDK components without assigning physical units/axes."""
+    array = np.asarray(value)
+    if array.size != 6 or array.dtype.kind not in 'fi' or not np.isfinite(array).all():
+        raise ValueError('F6 requires six finite numeric components')
+    if shape is not None and len(shape):
+        dims = tuple(int(n) for n in shape)
+        if any(n <= 0 for n in dims) or math.prod(dims) != 6:
+            raise ValueError('F6 shape does not match data')
+    return np.array(array, dtype=np.float64, copy=True).reshape(6)
+
+
 def image_array(value, shape=None):
     """Validate an SDK image block and take an owned, native-endian copy."""
     array = np.asarray(value)
@@ -62,6 +74,7 @@ class Frame:
     frame_id: object
     blocks: dict
     errors: dict
+    f6: object = None
 
 
 class TactileCache:
@@ -104,12 +117,18 @@ class TactileCache:
                     blocks[name] = array
                 except (ValueError, TypeError) as exc:
                     errors[name] = str(exc)
+            f6 = None
+            if content.get('F6') is not None:
+                try:
+                    f6 = f6_array(content['F6'], shapes.get('F6'))
+                except (ValueError, TypeError) as exc:
+                    errors['F6'] = str(exc)
             frame_id = payload.get('frame_id')
             identity = (frame_id, ts)
             with self.lock:
                 if not self.closed and identity != self.identities.get(channel):
                     self.identities[channel] = identity
-                    self.pending[channel] = Frame(channel, stamp, ts, frame_id, blocks, errors)
+                    self.pending[channel] = Frame(channel, stamp, ts, frame_id, blocks, errors, f6)
         except Exception as exc:
             with self.lock:
                 if not self.closed:

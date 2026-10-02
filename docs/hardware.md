@@ -53,3 +53,41 @@ ros2 launch dual_sharpa_wave dual_sharpa.launch.py \
 `SharpaSdkHand(..., sdk_factory=...)` 可注入 module-shaped Fake SDK。測試 double 實作官方 sample/header 中使用到的 API，回傳獨立的 feedback，也可注入錯誤；它不會呼叫網路或官方 SDK。
 
 測試涵蓋指定 serial、設定順序、start/stop bool、Error status、命令 interpolation、非 identity joint mapping、degree/radian 轉換、discovery 逾時、初始化／讀寫／cleanup 失敗、command timeout 鎖定。這些驗證 adapter 邏輯，不證明 native library 相容、SDK discovery、雙程序連線、韌體、實際角度零位、馬達速度或停止效果。
+
+## TCP 已連線但初始化逾時／Invalid response
+
+如果 discovery 能找到雙手、`TcpClient::Open() succeed` 後仍出現
+`GET_PARAM_INFO`／`GET_ALL_PARAM` 的 `FAILURE_TO_CONNECT_TO_SERVER`，接著
+`set_control_mode` 回報 code 2 或 code 18，應檢查實際 TCP 回覆與網卡接收錯誤。
+SDK import 成功與 ping 正常，都不足以證明控制通訊正常。
+
+2026-09-28 的現場診斷記錄：
+
+- SDK 5.0.10.6、手部韌體 3.0.10；主機 `192.168.10.240` 的路由正確。
+- 單程序、單隻手、`connect(serial, skip_tactile=True)` 後僅讀取 mode/source/feedback，
+  未呼叫 `start()` 或發送關節目標，也重現錯誤。因此不能只歸因於雙程序或觸覺初始化。
+- `strace` 顯示 SDK TCP 的 `SO_RCVTIMEO`／`SO_SNDTIMEO` 為 100 ms。
+  參數查詢逾時後，mode 查詢收到 `0x8053` 回覆，而下一個 source 查詢收到
+  `0x8004` 回覆，顯示回覆與當前請求錯位。不可忽略失敗的 status 繼續控制。
+- 網卡 `enx00249b1f0157`（MAC `00:24:9b:1f:01:57`，AX88179）
+  USB 連線速度為 480 Mb/s；`rx_errors` 超過 200 萬，且一次 2 秒取樣新增
+  18,539 次。兩隻手各 10 次 ping 都無丟包，仍有上述 SDK 錯誤。
+
+先停止失敗後仍留著的 launch，再檢查連接 Sharpa 的網卡（名稱可能因硬體而異）：
+
+```bash
+ip route get 192.168.10.10
+ip -s link show enx00249b1f0157
+lsusb -t
+cat /sys/class/net/enx00249b1f0157/device/../speed
+```
+
+將網卡接到主機板 USB 3.x 插孔，移除 USB 2.0 延長線／集線器；確認
+`lsusb -t` 顯示該 AX88179 為 `5000M`。若仍只有 `480M`，需檢查網卡、
+USB 線材與插孔是否支援 USB 3.x。持續增加的接收錯誤也需要檢查 Ethernet
+線材、交換器埠與網卡本身。USB 速度是診斷線索，換埠能否解決此案例仍需實測。
+
+重接後確認 `192.168.10.240/24` 仍配置在正確介面，觀察 `rx_errors` 的增量，
+再重新啟動 hardware launch。只有雙側都出現 `hand ready` 且
+`joint_states` 持續更新，才代表啟動恢復；增加 `sdk_discovery_timeout_sec`
+不會改變 SDK 內部的 TCP 逾時。

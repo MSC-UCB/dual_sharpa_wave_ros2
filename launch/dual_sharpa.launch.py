@@ -48,6 +48,10 @@ def _hand_actions(context, backend: str, config: Path):
         overrides['read_only'] = read_only == 'true'
         if rate:
             overrides['publish_rate_hz'] = float(rate)
+        for name in ('mit_kp_ratio', 'mit_kd_ratio'):
+            ratio = LaunchConfiguration(name, default='').perform(context)
+            if ratio:
+                overrides[name] = float(ratio)
         actions.append(Node(
             package='dual_sharpa_wave',
             executable='hand_node',
@@ -148,6 +152,14 @@ def generate_launch_description():
             'publish_rate_hz',
             default_value='',
             description='Optional publish-rate override',
+        ),
+        DeclareLaunchArgument(
+            'mit_kp_ratio', default_value='',
+            description='Startup Kp multiplier for both hands; blank uses YAML (default 0.6)',
+        ),
+        DeclareLaunchArgument(
+            'mit_kd_ratio', default_value='',
+            description='Startup Kd multiplier for both hands; blank uses YAML (default 0.6)',
         ),
         DeclareLaunchArgument(
             'read_only', default_value='false', choices=['true', 'false'],
