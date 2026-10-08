@@ -64,3 +64,34 @@ def test_gui_feedback_initialization_slider_and_disconnect(monkeypatch):
     finally:
         panel.close()
         panel.close()
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('side', ['left', 'right'])
+def test_gui_can_send_with_only_one_hand_online(monkeypatch, side):
+    node = Mock()
+    node.limits = load_limits(Path(__file__).parents[1])
+    node.positions = {side: [0.] * 22}
+    node.ready.side_effect = lambda selected: selected == side
+    def require_ready(sides):
+        if any(s != side for s in sides):
+            raise RuntimeError('feedback missing')
+    node.require_ready.side_effect = require_ready
+    monkeypatch.setattr(gui_control.rclpy, 'ok', lambda: True)
+    monkeypatch.setattr(gui_control.rclpy, 'spin_once', lambda *a, **kw: None)
+    root = tk.Tk()
+    root.withdraw()
+    panel = gui_control.ControlPanel(root, node)
+    try:
+        root.update()
+        panel.tick()
+        assert set(panel.targets) == {side}
+        other = 'right' if side == 'left' else 'left'
+        assert panel.start_buttons[other].instate(['disabled'])
+        panel.start(side)
+        panel.next_tick = 0.
+        panel.tick()
+        assert panel.active[side] and not panel.active[other]
+        assert set(node.send.call_args.args[0]) == {side}
+    finally:
+        panel.close()

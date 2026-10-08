@@ -25,20 +25,22 @@ def _preview_description(share: Path, side: str) -> str:
     return ET.tostring(root, encoding='unicode')
 
 
+def _selected_sides(context):
+    selected = LaunchConfiguration('hands', default='both').perform(context)
+    if selected not in ('both', 'left', 'right'):
+        raise ValueError('hands must be both, left or right')
+    return ('left', 'right') if selected == 'both' else (selected,)
+
+
 def _hand_actions(context, backend: str, config: Path):
     if not config.is_file():
         raise FileNotFoundError(f'config_file does not exist: {config}')
     rate = LaunchConfiguration('publish_rate_hz').perform(context)
     actions = []
-    selected = LaunchConfiguration('hands', default='both').perform(context)
     mode = LaunchConfiguration('control_mode', default='').perform(context)
-    if selected not in ('both', 'left', 'right'):
-        raise ValueError('hands must be both, left or right')
     if mode not in ('', 'position', 'mit'):
         raise ValueError('control_mode must be position or mit')
-    for side in ('left', 'right'):
-        if selected != 'both' and side != selected:
-            continue
+    for side in _selected_sides(context):
         overrides = {'side': side, 'backend': backend}
         if mode:
             overrides['control_mode'] = mode
@@ -63,10 +65,10 @@ def _hand_actions(context, backend: str, config: Path):
     return actions
 
 
-def _hardware_config(config: Path) -> None:
+def _hardware_config(config: Path, sides=('left', 'right')) -> None:
     data = yaml.safe_load(config.read_text())
     serials = []
-    for side in ('left', 'right'):
+    for side in sides:
         name = f'/sharpa/{side}_hand/hand_node'
         try:
             serial = data[name]['ros__parameters']['serial_number']
@@ -77,7 +79,7 @@ def _hardware_config(config: Path) -> None:
         if not isinstance(serial, str) or not serial.strip():
             raise ValueError(f'{name} requires an explicit serial_number')
         serials.append(serial.strip())
-    if len(set(serials)) != 2:
+    if len(set(serials)) != len(serials):
         raise ValueError('left and right serial_number must be different')
 
 
@@ -85,6 +87,7 @@ def _preview_actions(context, share: Path):
     if LaunchConfiguration('use_rviz').perform(context).lower() != 'true':
         return []
     prefix = 'sharpa_preview/'
+    sides = _selected_sides(context)
     actions = [Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -95,18 +98,22 @@ def _preview_actions(context, share: Path):
             'frame_prefix': prefix,
         }],
         output='screen',
-    ) for side in ('left', 'right')]
+    ) for side in sides]
     actions.append(Node(
         package='rviz2',
         executable='rviz2',
         name='sharpa_preview_rviz',
-        arguments=['-d', str(share / 'rviz/dual_sharpa.rviz')],
+        arguments=['-d', str(share / 'rviz' / (
+            'dual_sharpa.rviz' if len(sides) == 2 else 'single_sharpa.rviz'))],
+        remappings=[] if len(sides) == 2 else [
+            ('/single_hand_description', f'/sharpa/{sides[0]}_hand/robot_description')],
         output='screen',
     ))
     return actions
 
 
 def _actions(context):
+    sides = _selected_sides(context)
     share = Path(get_package_share_directory('dual_sharpa_wave'))
     backend = LaunchConfiguration('backend').perform(context)
     if backend not in ('mock', 'sharpa_sdk'):
@@ -123,7 +130,7 @@ def _actions(context):
         config = share / 'config' / filename
 
     if backend == 'sharpa_sdk':
-        _hardware_config(config)
+        _hardware_config(config, sides)
     return _hand_actions(context, backend, config) + _preview_actions(context, share)
 
 
@@ -169,7 +176,7 @@ def generate_launch_description():
             'use_rviz',
             default_value='false',
             choices=['true', 'false'],
-            description='Start RViz and both preview state publishers',
+            description='Start RViz and preview state publishers for selected hands',
         ),
         OpaqueFunction(function=_actions),
     ])

@@ -89,6 +89,71 @@ export ROS_DOMAIN_ID=172
 ros2 launch dual_sharpa_wave dual_sharpa.launch.py backend:=mock
 ```
 
+## Single-hand bringup
+
+Use `single_sharpa.launch.py` to start only the selected hand. The source directory
+is `dual_sharpa_wave_ros2`, while the ROS package name remains `dual_sharpa_wave`.
+Source ROS and the workspace in every terminal.
+
+```bash
+# Left hand only, software mock
+ros2 launch dual_sharpa_wave single_sharpa.launch.py prefix:=left_ backend:=mock
+
+# Right hand only, software mock with a single-hand RViz preview
+ros2 launch dual_sharpa_wave single_sharpa.launch.py \
+  prefix:=right_ backend:=mock use_rviz:=true
+
+# Feedback only, without a joint-command subscription
+ros2 launch dual_sharpa_wave single_sharpa.launch.py \
+  prefix:=left_ backend:=mock read_only:=true
+```
+
+`prefix` accepts only `left_` and `right_` (default `left_`). The launch defaults to
+`backend:=mock`, `read_only:=false`, and `use_rviz:=false`. It forwards
+`control_mode`, `config_file`, `publish_rate_hz`, `mit_kp_ratio`, and `mit_kd_ratio`
+to the existing driver launch; empty overrides retain the backend/YAML defaults.
+It starts no motion sender. Existing dual-hand launch defaults remain unchanged.
+
+Only `/sharpa/<side>_hand/hand_node` is started. Its feedback contains the selected
+22 joints. Hardware YAML may contain both hands or just the selected node's entry;
+only the selected serial number is required. Launching both hands still requires
+two distinct serial numbers. With `use_rviz:=true`, only the selected preview
+state publisher and one hand model display are started.
+
+After configuring the SDK environment below, select physical hardware explicitly:
+
+```bash
+ros2 launch dual_sharpa_wave single_sharpa.launch.py \
+  prefix:=left_ backend:=sharpa_sdk read_only:=true
+
+# Writable hardware; defaults to MIT unless overridden by control_mode or YAML
+ros2 launch dual_sharpa_wave single_sharpa.launch.py \
+  prefix:=left_ backend:=sharpa_sdk read_only:=false
+```
+
+Writable hardware startup configures the selected hand's mode and enables motors;
+it does not wait for a motion sender to perform that configuration. The other
+hand is not connected or configured by this launch.
+
+The existing GUI can be started separately:
+
+```bash
+ros2 run dual_sharpa_wave gui_control.py
+```
+
+The connected side's panel becomes available independently. The absent side stays
+waiting/disabled. The GUI still creates command publishers and feedback
+subscriptions for both sides, so inactive-side topics may appear when the GUI is
+running; they do not indicate an inactive-side driver. Sine/step waveform tools
+retain their existing dual-hand behavior and are not started by this launch.
+
+After building, run the installed-launch mock and preview checks explicitly:
+
+```bash
+SINGLE_SIDE_ROS_MOCK=1 python3 -m pytest -q \
+  src/dual_sharpa_wave_ros2/test/test_single_hand_launch.py
+```
+
 ## Sharpa SDK environment
 
 The terminal running the real hardware nodes must have the SDK paths configured:
@@ -197,7 +262,7 @@ source install/setup.bash
 ros2 run dual_sharpa_wave gui_control.py
 ```
 
-The GUI enables interaction after it receives feedback from both hands. Click `Load Current Pose` first, adjust one joint by a small amount, and then click `Start Sending`. Closing the GUI or clicking `Stop Sending` does not return the hands to zero and is not an emergency stop.
+The GUI enables each panel independently after it receives valid feedback and finds that hand's command subscriber. An offline hand does not block the other panel. Click `Load Current Pose` first, adjust one joint by a small amount, and then click `Start Sending`. Closing the GUI or clicking `Stop Sending` does not return the hands to zero and is not an emergency stop.
 
 ## Waveform control
 
