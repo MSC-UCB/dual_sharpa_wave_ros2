@@ -7,7 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if not (ROOT / 'dual_sharpa_wave').exists():
-    ROOT = Path('/home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2/packages/dual_sharpa_wave')
+    ROOT = Path('/home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2')
 SCRIPT = ROOT / 'script/move_to_default_pose.py'
 if not SCRIPT.exists():
     SCRIPT = Path(__file__).with_name('move_to_default_pose.py')

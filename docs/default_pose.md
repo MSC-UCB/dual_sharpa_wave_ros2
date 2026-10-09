@@ -11,7 +11,7 @@ It uses the installed `dual_sharpa_wave` package. Source ROS and the workspace f
 ```bash
 source /opt/ros/jazzy/setup.bash
 source /home/msc-crx/ws_fanuc/install/setup.bash
-cd /home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2/packages/dual_sharpa_wave
+cd /home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2
 python3 script/move_to_default_pose.py
 ```
 

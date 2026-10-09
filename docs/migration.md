@@ -2,7 +2,18 @@
 
 `dual_sharpa_wave` now includes the Python driver, `RecoverDefault.action`, and
 `MitGains.srv`. Its build type changed from `ament_python` to `ament_cmake`.
-The source package remains at `src/dual_sharpa_wave_ros2/packages/dual_sharpa_wave`.
+The source package is at the repository root, `src/dual_sharpa_wave_ros2`.
+
+## Moving from the nested single-package layout
+
+If your checkout already used the merged interfaces but kept the package under
+`packages/dual_sharpa_wave/`, update any source paths to the repository root.
+ROS package names, interface types, imports and launch commands do not change
+in this layout update. The full driver guide is now the root `README.md`.
+
+Follow the build/install backup procedure below before rebuilding. CMake caches
+and symlink installs reference the previous source directory, so they must be
+regenerated. There is no need to rebuild unrelated CRX packages for this move.
 
 ## Interface compatibility
 
@@ -73,7 +84,7 @@ ros2 pkg executables dual_sharpa_wave
 ros2 interface show dual_sharpa_wave/action/RecoverDefault
 ros2 interface show dual_sharpa_wave/srv/MitGains
 python3 -c 'from dual_sharpa_wave.action import RecoverDefault; from dual_sharpa_wave.srv import MitGains; from dual_sharpa_wave import hand_node; print(hand_node.__file__)'
-python3 -m pytest -q src/dual_sharpa_wave_ros2/packages/dual_sharpa_wave/test -m 'not integration'
+python3 -m pytest -q src/dual_sharpa_wave_ros2/test -m 'not integration'
 ```
 
 Package discovery should list only `dual_sharpa_wave` with type `ros.ament_cmake`.
