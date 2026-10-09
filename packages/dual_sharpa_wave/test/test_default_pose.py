@@ -1,15 +1,13 @@
 """Default pose regression tests with fake IO; no ROS/SDK/device connections."""
 import importlib.util
 from pathlib import Path
-import sys
 from types import SimpleNamespace as NS
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if not (ROOT / 'dual_sharpa_wave').exists():
-    ROOT = Path('/home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2')
-sys.path.insert(0, str(ROOT))
+    ROOT = Path('/home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2/packages/dual_sharpa_wave')
 SCRIPT = ROOT / 'script/move_to_default_pose.py'
 if not SCRIPT.exists():
     SCRIPT = Path(__file__).with_name('move_to_default_pose.py')

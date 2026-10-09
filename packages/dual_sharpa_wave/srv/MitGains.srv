@@ -1,0 +1,15 @@
+# Arrays use the driver's canonical 22-joint order. Only APPLY uses them.
+uint8 READ=0
+uint8 APPLY=1
+uint8 CANCEL=2
+uint8 STATUS=3
+uint8 operation
+float64[] kp
+float64[] kd
+---
+bool success
+string message
+# Last device readback, empty when unavailable. STATUS never reads hardware.
+float64[] kp
+float64[] kd
+uint8 remaining_steps

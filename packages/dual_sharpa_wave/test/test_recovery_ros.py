@@ -12,7 +12,7 @@ from rclpy.executors import SingleThreadedExecutor
 from rclpy.parameter import Parameter
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
-from sharpa_control_interfaces.action import RecoverDefault
+from dual_sharpa_wave.action import RecoverDefault
 
 from conftest import FakeSdk
 from dual_sharpa_wave import hand_node

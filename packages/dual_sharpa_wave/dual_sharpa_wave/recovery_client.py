@@ -6,7 +6,7 @@ import time
 from rcl_interfaces.srv import GetParameters
 from rclpy.action import ActionClient
 from std_msgs.msg import String
-from sharpa_control_interfaces.action import RecoverDefault
+from dual_sharpa_wave.action import RecoverDefault
 
 from .control_model import SIDES
 from .joint_names import joint_names

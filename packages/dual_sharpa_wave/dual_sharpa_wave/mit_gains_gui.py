@@ -7,7 +7,7 @@ from tkinter import ttk
 
 import rclpy
 from rclpy.utilities import remove_ros_args
-from sharpa_control_interfaces.srv import MitGains
+from dual_sharpa_wave.srv import MitGains
 
 from .joint_names import joint_names
 from .mit_gains import gains, scaled_gains, PERIOD

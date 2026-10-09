@@ -6,7 +6,7 @@ import time
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.task import Future
 from std_msgs.msg import String
-from sharpa_control_interfaces.action import RecoverDefault
+from dual_sharpa_wave.action import RecoverDefault
 
 from .zero_trajectory import zero_duration, zero_sample
 

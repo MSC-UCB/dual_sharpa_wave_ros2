@@ -211,7 +211,7 @@ def test_gain_service_over_dds(hand, fake_sdk, monkeypatch, write_delay):
     from rclpy.executors import SingleThreadedExecutor
     from rclpy.node import Node
     from rclpy.parameter import Parameter
-    from sharpa_control_interfaces.srv import MitGains
+    from dual_sharpa_wave.srv import MitGains
     from dual_sharpa_wave import hand_node
 
     write = fake_sdk.set_parameter
@@ -274,7 +274,7 @@ def test_gui_only_writes_on_apply(monkeypatch):
     from concurrent.futures import Future
     import tkinter as tk
     from unittest.mock import Mock
-    from sharpa_control_interfaces.srv import MitGains
+    from dual_sharpa_wave.srv import MitGains
     from dual_sharpa_wave import mit_gains_gui as gui
 
     try:

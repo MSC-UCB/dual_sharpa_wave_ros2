@@ -1,0 +1,15 @@
+# The driver owns a zero-pose trajectory; this is not an arbitrary-target action.
+float64 minimum_duration_sec
+float64 max_speed_rad_s
+float64 max_acceleration_rad_s2
+float64 command_rate_hz
+float64 tolerance_rad
+float64 hold_time_sec
+float64 settle_timeout_sec
+---
+bool success
+string message
+---
+string state
+float64[] actual_positions
+float64 max_error_rad

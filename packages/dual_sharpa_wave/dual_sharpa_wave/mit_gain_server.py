@@ -1,6 +1,6 @@
 """Serialized gain service; uses the hand node's existing callback group."""
 
-from sharpa_control_interfaces.srv import MitGains
+from dual_sharpa_wave.srv import MitGains
 
 from .mit_gains import GainTransition, PERIOD
 

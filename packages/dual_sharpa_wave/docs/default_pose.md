@@ -11,7 +11,7 @@ It uses the installed `dual_sharpa_wave` package. Source ROS and the workspace f
 ```bash
 source /opt/ros/jazzy/setup.bash
 source /home/msc-crx/ws_fanuc/install/setup.bash
-cd /home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2
+cd /home/msc-crx/ws_fanuc/src/dual_sharpa_wave_ros2/packages/dual_sharpa_wave
 python3 script/move_to_default_pose.py
 ```
 
@@ -26,7 +26,8 @@ python3 script/move_to_default_pose.py --execute --rate 100
 The script reads both drivers' `control_mode`. In POSITION mode it reuses
 `CommandClient`, sending complete named JointState targets to
 `/sharpa/left_hand/joint_command` and `/sharpa/right_hand/joint_command`.
-In MIT it requests each driver's `recover_default` action. Both goals must be
+In MIT it requests each driver's `recover_default` action using
+`dual_sharpa_wave/action/RecoverDefault`. Both goals must be
 accepted before the client sends matching goal-ID heartbeats to start motion.
 The drivers generate the zero trajectories and reject ordinary commands during
 recovery. This is not an atomic or hardware-synchronized dual-hand move.
@@ -76,11 +77,15 @@ client cancels the other's unfinished goal. A hand that already completed stays
 unlocked. Locks/cancellation do not disable motors or clear the last MIT target.
 Persistent worsening of limit violation during recovery and SDK faults close
 and latch the session; these require a driver restart and investigation.
-See [MIT recovery details](mit_control.md) for the worsening thresholds and topics.
+See the [control semantics](../README.md#control-semantics) and
+[`dual_sharpa_mit.yaml`](../config/dual_sharpa_mit.yaml) for recovery configuration.
 
-Build the new action-interface dependency and source the workspace before use:
+The action is generated as part of `dual_sharpa_wave`. Build and source the
+workspace before use (see [migration](migration.md) for an existing installation):
 
 ```bash
+cd ~/ws_fanuc
+source /opt/ros/jazzy/setup.bash
 colcon build --symlink-install --packages-up-to dual_sharpa_wave
 source install/setup.bash
 ```
