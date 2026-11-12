@@ -1,4 +1,4 @@
-"""Paired default-pose action client; no SDK calls, no arbitrary recovery targets."""
+"""Selected-hand default-pose action client; no SDK calls or arbitrary targets."""
 
 import math
 import time
@@ -13,9 +13,17 @@ from .joint_names import joint_names
 from .zero_trajectory import zero_duration
 
 
-def driver_modes(node, timeout, spin_once, ok):
+def selected_sides(sides):
+    sides = tuple(sides)
+    if not sides or len(set(sides)) != len(sides) or any(s not in SIDES for s in sides):
+        raise ValueError('sides must contain left and/or right, without duplicates')
+    return sides
+
+
+def driver_modes(node, timeout, spin_once, ok, sides=SIDES):
+    sides = selected_sides(sides)
     clients = {s: node.create_client(GetParameters, f'/sharpa/{s}_hand/hand_node/get_parameters')
-               for s in SIDES}
+               for s in sides}
     futures = {}
     deadline = time.monotonic() + timeout
     try:
@@ -23,7 +31,7 @@ def driver_modes(node, timeout, spin_once, ok):
             for side, client in clients.items():
                 if side not in futures and client.service_is_ready():
                     futures[side] = client.call_async(GetParameters.Request(names=['control_mode', 'read_only']))
-            if len(futures) == 2 and all(f.done() for f in futures.values()):
+            if len(futures) == len(sides) and all(f.done() for f in futures.values()):
                 modes = {}
                 for side, future in futures.items():
                     values = future.result().values
@@ -34,9 +42,9 @@ def driver_modes(node, timeout, spin_once, ok):
                     raise RuntimeError(f'Unknown driver control modes: {modes}')
                 if len(set(modes.values())) != 1:
                     raise RuntimeError('Paired default pose requires both hands in the same control mode')
-                return modes['left']
+                return modes[sides[0]]
             if time.monotonic() > deadline:
-                raise TimeoutError('Cannot read both hand driver modes; check launch and ROS domain')
+                raise TimeoutError('Cannot read selected hand driver modes; check launch and ROS domain')
             spin_once(node, timeout_sec=.01)
         raise RuntimeError('ROS stopped while querying hand drivers')
     finally:
@@ -45,25 +53,31 @@ def driver_modes(node, timeout, spin_once, ok):
 
 
 def recover_both(node, args, spin_once, ok):
-    clients = {s: ActionClient(node, RecoverDefault, f'/sharpa/{s}_hand/recover_default') for s in SIDES}
-    heartbeats = {s: node.create_publisher(String, f'/sharpa/{s}_hand/recovery_heartbeat', 1) for s in SIDES}
+    return recover_selected(node, args, spin_once, ok, sides=SIDES)
+
+
+def recover_selected(node, args, spin_once, ok, sides=SIDES):
+    sides = selected_sides(sides)
+    clients = {s: ActionClient(node, RecoverDefault, f'/sharpa/{s}_hand/recover_default') for s in sides}
+    heartbeats = {s: node.create_publisher(String, f'/sharpa/{s}_hand/recovery_heartbeat', 1) for s in sides}
     requests, handles, results = {}, {}, {}
     complete = False
     deadline = time.monotonic() + args.wait_timeout
 
     def check_publishers():
-        if node.feedback_errors:
-            raise RuntimeError(f'Invalid feedback: {node.feedback_errors}')
-        for side in SIDES:
+        errors = {s: node.feedback_errors[s] for s in sides if s in node.feedback_errors}
+        if errors:
+            raise RuntimeError(f'Invalid feedback: {errors}')
+        for side in sides:
             if node.count_publishers(f'/sharpa/{side}_hand/joint_command') > 1:
                 raise RuntimeError(f'{side}: another command publisher exists; stop it first')
 
     try:
-        node.get_logger().info('Waiting for both MIT recovery actions and fresh hand feedback')
+        node.get_logger().info('Waiting for selected MIT recovery actions and fresh hand feedback')
         while ok():
             spin_once(node, timeout_sec=.01)
             check_publishers()
-            if all(node.ready(s) and clients[s].server_is_ready() for s in SIDES):
+            if all(node.ready(s) and clients[s].server_is_ready() for s in sides):
                 break
             if time.monotonic() > deadline:
                 raise TimeoutError('MIT recovery action/feedback unavailable; rebuild and restart hand drivers')
@@ -71,8 +85,8 @@ def recover_both(node, args, spin_once, ok):
             raise RuntimeError('ROS stopped before recovery')
         duration = max(zero_duration(node.positions[s], args.minimum_duration,
                                     math.radians(args.max_speed_deg_s), math.radians(args.max_accel_deg_s2))
-                       for s in SIDES)
-        for side in SIDES:
+                       for s in sides)
+        for side in sides:
             request = RecoverDefault.Goal(
                 minimum_duration_sec=duration, max_speed_rad_s=math.radians(args.max_speed_deg_s),
                 max_acceleration_rad_s2=math.radians(args.max_accel_deg_s2), command_rate_hz=args.rate,
@@ -80,7 +94,7 @@ def recover_both(node, args, spin_once, ok):
                 settle_timeout_sec=args.settle_timeout)
             requests[side] = clients[side].send_goal_async(request)
         deadline = time.monotonic() + args.wait_timeout
-        while ok() and len(handles) < 2:
+        while ok() and len(handles) < len(sides):
             spin_once(node, timeout_sec=.01)
             for side, future in requests.items():
                 if side not in handles and future.done():
@@ -91,17 +105,17 @@ def recover_both(node, args, spin_once, ok):
                     results[side] = handle.get_result_async()
             if time.monotonic() > deadline:
                 raise TimeoutError('Waiting for recovery goal acceptance timed out')
-        # No heartbeat (and thus no driver motion) until both goals are accepted.
+        # No heartbeat (and thus no driver motion) until all selected goals are accepted.
         next_report = 0.0
         while ok():
             check_publishers()
-            node.require_ready()
+            node.require_ready(sides)
             for side, future in results.items():
                 if future.done() and not future.result().result.success:
                     raise RuntimeError(f'{side}: {future.result().result.message}')
-            if len(results) == 2 and all(f.done() for f in results.values()):
+            if len(results) == len(sides) and all(f.done() for f in results.values()):
                 complete = True
-                node.get_logger().info('Both hands reached default pose; MIT control unlocked.')
+                node.get_logger().info('Selected hands reached default pose; MIT control unlocked.')
                 return 0
             for side, handle in handles.items():
                 if not results[side].done():
@@ -109,7 +123,7 @@ def recover_both(node, args, spin_once, ok):
             now = time.monotonic()
             if now >= next_report:
                 details = []
-                for side in SIDES:
+                for side in sides:
                     errors = [math.degrees(abs(q)) for q in node.positions[side]]
                     worst = max(range(22), key=errors.__getitem__)
                     details.append(f'{side}: {sum(e > args.tolerance_deg for e in errors)}/22 '

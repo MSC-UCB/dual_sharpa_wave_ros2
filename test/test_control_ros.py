@@ -12,18 +12,32 @@ from dual_sharpa_wave.joint_names import joint_names
 
 
 @pytest.fixture
-def client():
+def client(request):
     ctx = Context()
     rclpy.init(context=ctx, domain_id=172)
     node = control_ros.CommandClient('test_command_client', load_limits(Path(__file__).parents[1]),
+                                     sides=getattr(request, 'param', ('left', 'right')),
                                      context=ctx, enable_rosout=False)
-    node.command_publishers = {s: Mock() for s in ('left', 'right')}
+    assert set(node.command_publishers) == set(node.sides)
+    assert {sub.topic_name for sub in node.subscriptions_} == {
+        f'/sharpa/{side}_hand/joint_states' for side in node.sides}
+    node.command_publishers = {s: Mock() for s in node.sides}
     for side in node.command_publishers:
         node.command_publishers[side].get_subscription_count.return_value = 1
         node.on_state(side, JointState(name=list(joint_names(side)), position=[0.02] * 22))
     yield node
     node.destroy_node()
     ctx.try_shutdown()
+
+
+@pytest.mark.parametrize('client', [('left',), ('right',)], indirect=True)
+def test_selected_hand_has_no_other_transport_or_feedback_requirement(client):
+    side, = client.sides
+    client.require_ready()
+    client.send({side: [.02] * 22})
+    assert list(client.command_publishers) == [side]
+    message = client.command_publishers[side].publish.call_args.args[0]
+    assert message.name == list(joint_names(side))
 
 
 def test_same_stamp_canonical_names_and_atomic_pair_validation(client):

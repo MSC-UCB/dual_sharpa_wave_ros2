@@ -12,8 +12,12 @@ from .qos import hand_qos
 
 
 class CommandClient(Node):
-    def __init__(self, name, limits, state_timeout=1.0, **kwargs):
+    def __init__(self, name, limits, state_timeout=1.0, *, sides=SIDES, **kwargs):
         """With limits=None, validate message shape/finite values without clipping."""
+        sides = tuple(sides)
+        if not sides or len(set(sides)) != len(sides) or any(s not in SIDES for s in sides):
+            raise ValueError('sides must contain left and/or right, without duplicates')
+        self.sides = sides
         super().__init__(name, **kwargs)
         self.limits = limits
         self.state_timeout = positive(state_timeout, 'state-timeout')
@@ -22,7 +26,7 @@ class CommandClient(Node):
         self.feedback_errors = {}
         self.command_publishers = {}
         self.subscriptions_ = []
-        for side in SIDES:
+        for side in self.sides:
             self.command_publishers[side] = self.create_publisher(
                 JointState, f'/sharpa/{side}_hand/joint_command', hand_qos())
             self.subscriptions_.append(self.create_subscription(
@@ -47,7 +51,8 @@ class CommandClient(Node):
             and self.command_publishers[side].get_subscription_count() > 0
         )
 
-    def require_ready(self, sides=SIDES):
+    def require_ready(self, sides=None):
+        sides = self.sides if sides is None else sides
         for side in sides:
             if not self.ready(side):
                 detail = self.feedback_errors.get(side, 'feedback missing/stale or command subscriber missing')

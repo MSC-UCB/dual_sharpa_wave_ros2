@@ -1,5 +1,12 @@
 # Move both hands to the default pose
 
+Select `--side left`, `--side right`, or `--side both` (the default).
+For example, `ros2 run dual_sharpa_wave move_to_default_pose.py --side right --execute`
+resets only the right hand, in POSITION or MIT mode. Only selected-side drivers,
+feedback, commands, and recovery actions are used; the other hand need not be
+running. The paired checks below apply to `--side both`. Without `--execute`,
+only the selected targets are printed.
+
 The default matches retargeting's CRX+Sharpa configuration: all 22 joints of each
 hand are zero radians, in canonical URDF order. Both zero poses pass model limits.
 This is a joint target, not an SDK calibration or encoder reset.

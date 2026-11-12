@@ -51,25 +51,32 @@ def test_bad_cli(option, value):
 
 @pytest.mark.parametrize('mode', ['success', 'overshoot', 'stale', 'competing', 'missing', 'stuck',
                                  'bad_feedback', 'lost_subscriber', 'nonfinite'])
-def test_lifecycle(monkeypatch, mode):
+@pytest.mark.parametrize('side', ['both', 'left', 'right'])
+def test_lifecycle(monkeypatch, mode, side):
     clock, sent = [0.], []
     monkeypatch.setattr(motion.time, 'monotonic', lambda: clock[0])
     limits = load_limits(ROOT)
+    targets = motion.default_targets(side)
+    sides = tuple(targets)
 
     class FakeClient:
         def __init__(self):
-            self.positions = {s: [.1] * 22 for s in motion.SIDES}
+            self.positions = {s: [.1] * 22 for s in sides}
             self.feedback_errors = {}
         def get_logger(self):
             return NS(info=lambda *args: None)
         def count_publishers(self, topic):
+            assert any(f'/{s}_hand/' in topic for s in sides)
             return 2 if mode == 'competing' else 1
         def ready(self, side):
+            assert side in sides
             return mode != 'missing' and not (mode in ('stale', 'lost_subscriber') and clock[0] > .1)
-        def require_ready(self):
-            if not all(self.ready(s) for s in motion.SIDES):
+        def require_ready(self, selected):
+            assert tuple(selected) == sides
+            if not all(self.ready(s) for s in selected):
                 raise RuntimeError('Not ready')
         def send(self, targets):
+            assert tuple(targets) == sides
             sent.append(targets)
             if mode != 'stuck':
                 self.positions = {s: list(q) for s, q in targets.items()}
@@ -78,32 +85,32 @@ def test_lifecycle(monkeypatch, mode):
         clock[0] += .02
         assert clock[0] < 20, 'Failed to terminate'
         if mode == 'bad_feedback':
-            node.feedback_errors['left'] = 'Malformed feedback'
+            node.feedback_errors[sides[0]] = 'Malformed feedback'
         if mode == 'nonfinite':
-            node.positions['right'] = [float('nan')] * 22
+            node.positions[sides[-1]] = [float('nan')] * 22
         if mode == 'overshoot' and clock[0] < .12:
             # Measured overshoot persists across the initial recovery ticks.
-            node.positions['right'][17] = .26405816452245695
-            node.positions['left'][7] = -.002
+            node.positions[sides[-1]][17] = .26405816452245695
+            node.positions[sides[0]][7] = -.002
 
-    args = motion.parse_args(['--execute', '--minimum-duration', '.2', '--hold-time', '.1',
+    args = motion.parse_args(['--execute', '--side', side, '--minimum-duration', '.2', '--hold-time', '.1',
         '--wait-timeout', '.3', '--settle-timeout', '.3', '--tolerance-deg', '.01'])
     if mode in ('success', 'overshoot'):
         assert motion.run(FakeClient(), args, spin, lambda: True) == 0
-        assert sent[-1] == motion.default_targets()
+        assert sent[-1] == targets
         if mode == 'overshoot':
-            assert sent[0]['right'][17] == .26405816452245695
-            assert sent[0]['left'][7] == -.002
-            assert all(a['right'][17] >= b['right'][17] for a, b in zip(sent, sent[1:]))
+            assert sent[0][sides[-1]][17] == .26405816452245695
+            assert sent[0][sides[0]][7] == -.002
+            assert all(a[sides[-1]][17] >= b[sides[-1]][17] for a, b in zip(sent, sent[1:]))
     else:
         expected = (TimeoutError if mode in ('missing', 'stuck') else
                     ValueError if mode == 'nonfinite' else RuntimeError)
         with pytest.raises(expected) as failure:
             motion.run(FakeClient(), args, spin, lambda: True)
         if mode == 'missing':
-            assert 'not ready: left, right' in str(failure.value)
+            assert 'not ready: ' + ', '.join(sides) in str(failure.value)
         if mode == 'stuck':
-            assert 'left_thumb_CMC_FE error=5.730 deg' in str(failure.value)
+            assert f'{sides[0]}_thumb_CMC_FE error=5.730 deg' in str(failure.value)
             assert '22/22 outside 0.01 deg' in str(failure.value)
         if mode in ('competing', 'missing', 'bad_feedback', 'nonfinite'):
             assert not sent

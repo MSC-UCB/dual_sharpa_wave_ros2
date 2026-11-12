@@ -17,7 +17,7 @@ from dual_sharpa_wave.action import RecoverDefault
 from conftest import FakeSdk
 from dual_sharpa_wave import hand_node
 from dual_sharpa_wave.control_ros import CommandClient
-from dual_sharpa_wave.recovery_client import driver_modes, recover_both
+from dual_sharpa_wave.recovery_client import driver_modes, recover_both, recover_selected
 from dual_sharpa_wave.sharpa_sdk_hand import SharpaSdkHand
 
 
@@ -105,6 +105,22 @@ def test_paired_script_recovers_locked_hands_and_can_repeat(system):
         assert node._backend.mit_limits.state == 'normal'
         assert not any(c[0] in ('stop', 'disconnect') for c in s.sdks[side].calls)
     assert recover_both(s.client, s.args, s.spin, lambda: True) == 0
+
+
+@pytest.mark.parametrize('side', ['left', 'right'])
+def test_single_hand_recovers_without_other_driver(system, side):
+    s = system
+    other = 'left' if side == 'right' else 'right'
+    inactive = s.nodes.pop(other)
+    s.executor.remove_node(inactive)
+    inactive.destroy_node()
+    s.client.received_at.pop(other, None)
+    s.client.feedback_errors[other] = 'Inactive hand must not block selected recovery'
+    assert driver_modes(s.client, 3., s.spin, lambda: True, sides=(side,)) == 'mit'
+    assert recover_selected(s.client, s.args, s.spin, lambda: True, sides=(side,)) == 0
+    assert s.writes(side)
+    assert not s.writes(other)
+    assert s.nodes[side]._backend.mit_limits.state == 'normal'
 
 
 @pytest.mark.parametrize('system', [0., 21.], indirect=True)
