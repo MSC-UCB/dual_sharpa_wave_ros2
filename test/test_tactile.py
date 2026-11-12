@@ -59,6 +59,9 @@ def test_f6_cache_and_publication_without_ros_node(side, channel):
     subject._tactile_formats = {}
     subject._tactile_publishers = {('pinky', 'DIST_FORCE'): Mock()}
     subject._f6_publishers = {'pinky': Mock()}
+    subject._frame_publishers = {'pinky': Mock()}
+    subject.get_clock = Mock()
+    subject.get_clock.return_value.now.return_value.to_msg.return_value = Time(sec=8)
     subject.get_logger = Mock(return_value=Mock())
     subject._warn = Mock()
     hand_node.HandNode._on_tactile_timer(subject)

@@ -310,6 +310,28 @@ the launch remains running. The viewer never connects to the SDK directly.
 See the [read-only tactile test results](docs/tactile_read_test_2026-09-29.json)
 and [real-data preview](docs/images/tactile_live_2026-09-29.png).
 
+The [2026-11-11 verification report](docs/tactile_phase1a_baseline_validation_2026-11-11.md)
+and [capture summary](docs/tactile_read_test_2026-11-11.json) confirm live legacy
+F6, DIST_FORCE and RAW reception for all ten fingertips.
+
+The new [Phase 1A frame contract](docs/tactile_phase1a_contract.md) adds
+`/sharpa/<side>_hand/tactile/<finger>/frame` (`dual_sharpa_wave/msg/TactileFrame`):
+one SDK callback's available F6, CONTACT_POINT and DIST_FORCE blocks, with raw
+identity, receipt timing, original shapes and explicit validation states.
+Existing topics are retained. After building/sourcing the updated package and
+operator startup of the read-only driver, record a small summary with:
+
+```bash
+ros2 run dual_sharpa_wave capture_tactile_frames.py \
+  --side both --duration 10 --output /tmp/sharpa_frames_summary.json
+```
+
+See [Phase 1A validation and limitations](docs/tactile_phase1a_validation.md).
+The raw-data contract is implemented and live frame reception verified for all
+ten fingers; CONTACT_POINT is explicitly missing in the observed SDK output.
+Manual-contact recording was skipped at the operator's request. No physical
+units, calibrated forces or tested contact response are claimed.
+
 ## GUI control
 
 Keep the hardware launch running and start the GUI in another terminal:

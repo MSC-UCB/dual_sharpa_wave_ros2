@@ -4,10 +4,15 @@ project(dual_sharpa_wave)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/RecoverDefault.action"
   "srv/MitGains.srv"
+  "msg/TactileBlock.msg"
+  "msg/TactileFrame.msg"
+  DEPENDENCIES std_msgs builtin_interfaces
 )
 
 # rosidl already registers and installs the generated Python package. Install
@@ -24,6 +29,7 @@ install(DIRECTORY dual_sharpa_wave/
 install(PROGRAMS
   script/hand_node
   script/tactile_viewer.py
+  script/capture_tactile_frames.py
   script/gui_control.py
   script/adjust_mit_gains_gui.py
   script/sine_control.py

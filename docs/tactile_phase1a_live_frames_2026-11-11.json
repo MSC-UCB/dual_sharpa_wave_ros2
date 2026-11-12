@@ -1,0 +1,747 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-11-12T05:34:13.850109+00:00",
+  "duration_sec": 15.008508076993166,
+  "interrupted": false,
+  "mode": "subscriptions only; no SDK, services, actions or motion publishers",
+  "timing_note": "receive_to_publish uses driver monotonic time; receive_to_subscriber uses ROS clocks and requires synchronized clocks, not SDK measurement time",
+  "continuity_note": "sequence gaps include duplicate suppression, cache replacement and transport loss; ID regressions do not distinguish wrap/restart/reordering",
+  "fingers": {
+    "left/pinky": {
+      "count": 413,
+      "rejected_metadata": 0,
+      "observed_hz": 27.527844232016022,
+      "seconds_since_last_receive": 0.024334956993698142,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 413
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 413
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 413
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        2.5033950805664062e-06,
+        -3.5762786865234375e-07,
+        -1.0728836059570312e-06,
+        5.960464477539063e-08,
+        -5.960464477539063e-08,
+        5.960464477539063e-08
+      ],
+      "last_identity": {
+        "session_id": "cd7e3939-68ec-4dcd-8ca3-a396ff49cfd0",
+        "receipt_sequence": 1771,
+        "sdk_frame_id": 37563,
+        "sdk_timestamp_raw": 1794461653.798284,
+        "overwritten_frames": 153,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 49,
+      "receipt_sequence_gap_total": 40,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 413,
+        "min": 0.001095945,
+        "max": 0.034572298,
+        "mean": 0.016527533648910398
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 413,
+        "min": 0.0012624263763427734,
+        "max": 0.034739017486572266,
+        "mean": 0.016724628628599154
+      }
+    },
+    "left/ring": {
+      "count": 423,
+      "rejected_metadata": 0,
+      "observed_hz": 28.386983548098424,
+      "seconds_since_last_receive": 0.024494558994774707,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 423
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 423
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 423
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        -1.1801719665527344e-05,
+        1.6093254089355469e-06,
+        3.2782554626464844e-06,
+        -5.960464477539063e-08,
+        1.1920928955078125e-07,
+        -2.384185791015625e-07
+      ],
+      "last_identity": {
+        "session_id": "cd7e3939-68ec-4dcd-8ca3-a396ff49cfd0",
+        "receipt_sequence": 1835,
+        "sdk_frame_id": 37560,
+        "sdk_timestamp_raw": 1794461653.7973514,
+        "overwritten_frames": 183,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 40,
+      "receipt_sequence_gap_total": 40,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 423,
+        "min": 0.001005083,
+        "max": 0.034510658,
+        "mean": 0.01693905222458629
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 423,
+        "min": 0.0011260509490966797,
+        "max": 0.034671783447265625,
+        "mean": 0.01714872186629203
+      }
+    },
+    "left/middle": {
+      "count": 423,
+      "rejected_metadata": 0,
+      "observed_hz": 28.386568130631964,
+      "seconds_since_last_receive": 0.024149913995643146,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 423
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 423
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 423
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        2.0265579223632812e-06,
+        -5.960464477539063e-08,
+        -8.940696716308594e-07,
+        0.0,
+        0.0,
+        5.960464477539063e-08
+      ],
+      "last_identity": {
+        "session_id": "cd7e3939-68ec-4dcd-8ca3-a396ff49cfd0",
+        "receipt_sequence": 1836,
+        "sdk_frame_id": 37566,
+        "sdk_timestamp_raw": 1794461653.8054206,
+        "overwritten_frames": 174,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 40,
+      "receipt_sequence_gap_total": 40,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 423,
+        "min": 0.001156675,
+        "max": 0.034420287,
+        "mean": 0.016665054460992913
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 423,
+        "min": 0.0013000965118408203,
+        "max": 0.034564971923828125,
+        "mean": 0.01688759264934711
+      }
+    },
+    "left/index": {
+      "count": 428,
+      "rejected_metadata": 0,
+      "observed_hz": 28.72228048117943,
+      "seconds_since_last_receive": 0.024087052996037528,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 428
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 428
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 428
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        4.0531158447265625e-06,
+        -5.960464477539062e-07,
+        -1.430511474609375e-06,
+        5.960464477539063e-08,
+        0.0,
+        5.960464477539063e-08
+      ],
+      "last_identity": {
+        "session_id": "cd7e3939-68ec-4dcd-8ca3-a396ff49cfd0",
+        "receipt_sequence": 1840,
+        "sdk_frame_id": 37569,
+        "sdk_timestamp_raw": 1794461653.8068635,
+        "overwritten_frames": 146,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 34,
+      "receipt_sequence_gap_total": 34,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 428,
+        "min": 0.001364519,
+        "max": 0.034677048,
+        "mean": 0.017231644434579432
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 428,
+        "min": 0.0015020370483398438,
+        "max": 0.03480219841003418,
+        "mean": 0.017465646578886797
+      }
+    },
+    "left/thumb": {
+      "count": 421,
+      "rejected_metadata": 0,
+      "observed_hz": 28.25151355942534,
+      "seconds_since_last_receive": 0.02427965599054005,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 421
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 421
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 421
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        -7.331371307373047e-06,
+        9.5367431640625e-07,
+        1.9669532775878906e-06,
+        -5.960464477539063e-08,
+        5.960464477539063e-08,
+        -1.7881393432617188e-07
+      ],
+      "last_identity": {
+        "session_id": "cd7e3939-68ec-4dcd-8ca3-a396ff49cfd0",
+        "receipt_sequence": 1838,
+        "sdk_frame_id": 37563,
+        "sdk_timestamp_raw": 1794461653.8037844,
+        "overwritten_frames": 174,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 41,
+      "receipt_sequence_gap_total": 41,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 421,
+        "min": 0.001223586,
+        "max": 0.034302073,
+        "mean": 0.017059492152019025
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 421,
+        "min": 0.0014195442199707031,
+        "max": 0.034456729888916016,
+        "mean": 0.01730957450323037
+      }
+    },
+    "right/pinky": {
+      "count": 429,
+      "rejected_metadata": 0,
+      "observed_hz": 28.596852654824065,
+      "seconds_since_last_receive": 0.0329999429959571,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 429
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 429
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 429
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        -4.172325134277344e-07,
+        -2.980232238769531e-07,
+        -1.0132789611816406e-06,
+        0.0,
+        0.0,
+        -5.960464477539063e-08
+      ],
+      "last_identity": {
+        "session_id": "21cab4a0-8243-4144-9ea7-d7890da12d7e",
+        "receipt_sequence": 1861,
+        "sdk_frame_id": 37572,
+        "sdk_timestamp_raw": 1794461653.7954288,
+        "overwritten_frames": 168,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 37,
+      "receipt_sequence_gap_total": 37,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 429,
+        "min": 0.001566411,
+        "max": 0.034415243,
+        "mean": 0.017912383748251756
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 429,
+        "min": 0.0017380714416503906,
+        "max": 0.03463459014892578,
+        "mean": 0.018122724164060224
+      }
+    },
+    "right/ring": {
+      "count": 412,
+      "rejected_metadata": 0,
+      "observed_hz": 27.461499056833304,
+      "seconds_since_last_receive": 0.033199495999724604,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 412
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 412
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 412
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        -1.8537044525146484e-05,
+        2.562999725341797e-06,
+        4.827976226806641e-06,
+        -5.960464477539063e-08,
+        5.960464477539063e-08,
+        -4.172325134277344e-07
+      ],
+      "last_identity": {
+        "session_id": "21cab4a0-8243-4144-9ea7-d7890da12d7e",
+        "receipt_sequence": 1815,
+        "sdk_frame_id": 37575,
+        "sdk_timestamp_raw": 1794461653.7878501,
+        "overwritten_frames": 162,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 52,
+      "receipt_sequence_gap_total": 42,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 412,
+        "min": 0.001211566,
+        "max": 0.034380943,
+        "mean": 0.01702404273300971
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 412,
+        "min": 0.0013709068298339844,
+        "max": 0.03457522392272949,
+        "mean": 0.017243306613662867
+      }
+    },
+    "right/middle": {
+      "count": 422,
+      "rejected_metadata": 0,
+      "observed_hz": 28.06782069757098,
+      "seconds_since_last_receive": 2.5689994799904525e-05,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 422
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 422
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 422
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        1.7762184143066406e-05,
+        -2.4437904357910156e-06,
+        -5.4836273193359375e-06,
+        1.1920928955078125e-07,
+        -1.1920928955078125e-07,
+        3.5762786865234375e-07
+      ],
+      "last_identity": {
+        "session_id": "21cab4a0-8243-4144-9ea7-d7890da12d7e",
+        "receipt_sequence": 1861,
+        "sdk_frame_id": 37574,
+        "sdk_timestamp_raw": 1794461653.8180282,
+        "overwritten_frames": 170,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 45,
+      "receipt_sequence_gap_total": 45,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 422,
+        "min": 0.001165746,
+        "max": 0.034637108,
+        "mean": 0.01665807650236968
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 422,
+        "min": 0.0014181137084960938,
+        "max": 0.034780025482177734,
+        "mean": 0.01689649419196974
+      }
+    },
+    "right/index": {
+      "count": 422,
+      "rejected_metadata": 0,
+      "observed_hz": 28.12966460705081,
+      "seconds_since_last_receive": 0.033145064997370355,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 422
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 422
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 422
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        -3.993511199951172e-06,
+        1.7881393432617188e-07,
+        7.748603820800781e-07,
+        -5.960464477539063e-08,
+        5.960464477539063e-08,
+        -5.960464477539063e-08
+      ],
+      "last_identity": {
+        "session_id": "21cab4a0-8243-4144-9ea7-d7890da12d7e",
+        "receipt_sequence": 1859,
+        "sdk_frame_id": 37574,
+        "sdk_timestamp_raw": 1794461653.7939954,
+        "overwritten_frames": 179,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 43,
+      "receipt_sequence_gap_total": 43,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 422,
+        "min": 0.001206026,
+        "max": 0.034380966,
+        "mean": 0.01705892454976306
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 422,
+        "min": 0.0013604164123535156,
+        "max": 0.034535884857177734,
+        "mean": 0.017304592787936966
+      }
+    },
+    "right/thumb": {
+      "count": 416,
+      "rejected_metadata": 0,
+      "observed_hz": 27.727771452764237,
+      "seconds_since_last_receive": 0.032951592991594225,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 416
+          },
+          "last_shape": [
+            1,
+            1,
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "missing": 416
+          },
+          "last_shape": [],
+          "last_dtype": ""
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 416
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float64"
+        }
+      },
+      "last_f6_raw": [
+        -1.3172626495361328e-05,
+        1.3113021850585938e-06,
+        2.384185791015625e-06,
+        -5.960464477539063e-08,
+        5.960464477539063e-08,
+        -2.980232238769531e-07
+      ],
+      "last_identity": {
+        "session_id": "21cab4a0-8243-4144-9ea7-d7890da12d7e",
+        "receipt_sequence": 1860,
+        "sdk_frame_id": 37573,
+        "sdk_timestamp_raw": 1794461653.7992465,
+        "overwritten_frames": 187,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 49,
+      "receipt_sequence_gap_total": 49,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 416,
+        "min": 0.00151855,
+        "max": 0.034285292,
+        "mean": 0.01631071161057692
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 416,
+        "min": 0.0016455650329589844,
+        "max": 0.03446078300476074,
+        "mean": 0.016572122963575218
+      }
+    }
+  },
+  "evidence_kind": "LIVE hardware via read-only ROS subscriptions; operator-started driver",
+  "read_only_parameters": {
+    "left": true,
+    "right": true
+  },
+  "read_only_parameter_evidence": "ros2 param get on both hand_node nodes during the frame recording"
+}

@@ -1,0 +1,661 @@
+{
+  "mode": "live read-only ROS subscription; no SDK calls",
+  "joint_command_graph": {
+    "left": {
+      "publishers": 0,
+      "subscribers": 0
+    },
+    "right": {
+      "publishers": 0,
+      "subscribers": 0
+    }
+  },
+  "fingers": {
+    "left/thumb": {
+      "samples": 75,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38649,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.7776864,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            8.64267349243164e-06,
+            -1.1324882507324219e-06,
+            -2.5033950805664062e-06,
+            5.960464477539063e-08,
+            -5.960464477539063e-08,
+            1.7881393432617188e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0003216266632080078,
+            0.0001010894775390625,
+            0.00023293495178222656,
+            -5.799531936645508e-05,
+            2.193450927734375e-05,
+            4.225969314575195e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "left/ring": {
+      "samples": 78,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38648,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.7729046,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            1.1682510375976562e-05,
+            -1.7285346984863281e-06,
+            -3.5762786865234375e-06,
+            5.960464477539063e-08,
+            -5.960464477539063e-08,
+            2.980232238769531e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0002294778823852539,
+            8.040666580200195e-05,
+            0.0001590251922607422,
+            -2.962350845336914e-05,
+            1.1920928955078125e-05,
+            1.9609928131103516e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "left/middle": {
+      "samples": 81,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38655,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.7959023,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            2.384185791015625e-06,
+            -5.960464477539063e-08,
+            -1.1920928955078125e-07,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0002346038818359375,
+            9.292364120483398e-05,
+            0.00015664100646972656,
+            -2.8848648071289062e-05,
+            1.4007091522216797e-05,
+            1.8358230590820312e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "left/index": {
+      "samples": 77,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38656,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.7700894,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            6.318092346191406e-06,
+            -4.76837158203125e-07,
+            -1.7285346984863281e-06,
+            0.0,
+            -5.960464477539063e-08,
+            1.1920928955078125e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.00035500526428222656,
+            0.00013113021850585938,
+            0.00023365020751953125,
+            -4.398822784423828e-05,
+            1.8835067749023438e-05,
+            2.849102020263672e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "left/pinky": {
+      "samples": 73,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38650,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.76962,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            -1.823902130126953e-05,
+            2.1457672119140625e-06,
+            5.662441253662109e-06,
+            -5.960464477539063e-08,
+            5.960464477539063e-08,
+            -4.172325134277344e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0002372264862060547,
+            9.876489639282227e-05,
+            0.00015091896057128906,
+            -1.919269561767578e-05,
+            9.894371032714844e-06,
+            1.1980533599853516e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "right/pinky": {
+      "samples": 52,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38661,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.8073447,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            -8.52346420288086e-06,
+            1.0728836059570312e-06,
+            2.1457672119140625e-06,
+            0.0,
+            0.0,
+            -1.7881393432617188e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.00023627281188964844,
+            9.34600830078125e-05,
+            0.00016057491302490234,
+            -3.0875205993652344e-05,
+            1.4960765838623047e-05,
+            2.014636993408203e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "right/thumb": {
+      "samples": 54,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38662,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.7978103,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            -3.337860107421875e-06,
+            2.384185791015625e-07,
+            5.960464477539062e-07,
+            -5.960464477539063e-08,
+            0.0,
+            -5.960464477539063e-08
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0002689361572265625,
+            0.00010001659393310547,
+            0.00018513202667236328,
+            -3.319978713989258e-05,
+            1.4483928680419922e-05,
+            2.187490463256836e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "right/index": {
+      "samples": 53,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38663,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.803992,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            1.0788440704345703e-05,
+            -1.430511474609375e-06,
+            -2.9206275939941406e-06,
+            5.960464477539063e-08,
+            -5.960464477539063e-08,
+            1.7881393432617188e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.00030350685119628906,
+            0.0001157522201538086,
+            0.0002067089080810547,
+            -3.987550735473633e-05,
+            1.817941665649414e-05,
+            2.7179718017578125e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "right/middle": {
+      "samples": 50,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38663,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.8006308,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            2.1636486053466797e-05,
+            -2.5033950805664062e-06,
+            -5.304813385009766e-06,
+            5.960464477539063e-08,
+            -1.1920928955078125e-07,
+            4.76837158203125e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0002923011779785156,
+            0.00011163949966430664,
+            0.00019633769989013672,
+            -4.00543212890625e-05,
+            1.817941665649414e-05,
+            2.562999725341797e-05
+          ],
+          "error": ""
+        }
+      }
+    },
+    "right/ring": {
+      "samples": 49,
+      "invalid_payloads": 0,
+      "last": {
+        "sdk_frame_id": 38662,
+        "sdk_frame_id_valid": true,
+        "sdk_timestamp_raw": 1794461688.8101945,
+        "sdk_timestamp_valid": true,
+        "identity_warnings": [],
+        "validation_errors": [],
+        "f6": {
+          "status": 1,
+          "shape": [
+            1,
+            1,
+            6
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[1, 1, 6]",
+          "dtype": "float64",
+          "value_count": 6,
+          "first_values": [
+            -1.0371208190917969e-05,
+            1.3709068298339844e-06,
+            3.2186508178710938e-06,
+            -5.960464477539063e-08,
+            0.0,
+            -1.7881393432617188e-07
+          ],
+          "error": ""
+        },
+        "contact_points": {
+          "status": 0,
+          "shape": [],
+          "shape_declared": true,
+          "declared_shape_json": "[]",
+          "dtype": "",
+          "value_count": 0,
+          "first_values": [],
+          "error": ""
+        },
+        "dist_force": {
+          "status": 1,
+          "shape": [
+            60,
+            60,
+            3
+          ],
+          "shape_declared": true,
+          "declared_shape_json": "[60, 60, 3]",
+          "dtype": "float64",
+          "value_count": 10800,
+          "first_values": [
+            -0.0002601146697998047,
+            0.00010532140731811523,
+            0.00017452239990234375,
+            -3.820657730102539e-05,
+            1.8775463104248047e-05,
+            2.3543834686279297e-05
+          ],
+          "error": ""
+        }
+      }
+    }
+  },
+  "evidence_kind": "LIVE hardware via read-only ROS subscriptions; operator-started driver",
+  "read_only_parameters": {
+    "left": true,
+    "right": true
+  },
+  "read_only_parameter_evidence": "ros2 param get on both hand_node nodes during the frame recording"
+}

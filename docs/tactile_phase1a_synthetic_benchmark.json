@@ -1,0 +1,23 @@
+{
+  "kind": "synthetic microbenchmark; not live hardware timing or throughput guarantee",
+  "iterations": 200,
+  "payload": "F6 + one three-column CONTACT_POINT + 60x60x3 DIST_FORCE, with legacy RAW 240x320 and DEFORM3 240x240x3 in callback",
+  "serialized_frame_bytes": 86912,
+  "stages_ms": {
+    "cache_receive": {
+      "median": 0.0834955,
+      "p95": 0.11908999999999996,
+      "max": 0.175392
+    },
+    "drain_and_message_build": {
+      "median": 0.0247705,
+      "p95": 0.03844299999999999,
+      "max": 0.354833
+    },
+    "cdr_serialize": {
+      "median": 0.0152555,
+      "p95": 0.02378949999999999,
+      "max": 0.03599
+    }
+  }
+}

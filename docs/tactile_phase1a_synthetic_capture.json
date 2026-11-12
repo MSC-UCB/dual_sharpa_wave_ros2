@@ -1,0 +1,382 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-11-12T05:30:14.764212+00:00",
+  "duration_sec": 2.0304030279949075,
+  "interrupted": false,
+  "mode": "subscriptions only; no SDK, services, actions or motion publishers",
+  "timing_note": "receive_to_publish uses driver monotonic time; receive_to_subscriber uses ROS clocks and requires synchronized clocks, not SDK measurement time",
+  "continuity_note": "sequence gaps include duplicate suppression, cache replacement and transport loss; ID regressions do not distinguish wrap/restart/reordering",
+  "fingers": {
+    "right/pinky": {
+      "count": 57,
+      "rejected_metadata": 0,
+      "observed_hz": 29.337981946374395,
+      "seconds_since_last_receive": 2.453099295962602e-05,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 57
+          },
+          "last_shape": [
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "empty": 57
+          },
+          "last_shape": [
+            0,
+            3
+          ],
+          "last_dtype": "float32"
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 57
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float32"
+        }
+      },
+      "last_f6_raw": [
+        68.0,
+        68.0,
+        68.0,
+        68.0,
+        68.0,
+        68.0
+      ],
+      "last_identity": {
+        "session_id": "8a9ee8ad-8006-40c5-93a0-f6ed38e5875a",
+        "receipt_sequence": 68,
+        "sdk_frame_id": 68,
+        "sdk_timestamp_raw": 2.2666666666666666,
+        "overwritten_frames": 0,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 0,
+      "receipt_sequence_gap_total": 0,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 57,
+        "min": 0.000343714,
+        "max": 0.000750897,
+        "mean": 0.00042678307017543845
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 57,
+        "min": 0.00048279762268066406,
+        "max": 0.00095367431640625,
+        "mean": 0.0005917674616763467
+      }
+    },
+    "right/ring": {
+      "count": 56,
+      "rejected_metadata": 0,
+      "observed_hz": 29.33695003942642,
+      "seconds_since_last_receive": 0.03387403499800712,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "empty": 56
+          },
+          "last_shape": [
+            0,
+            3
+          ],
+          "last_dtype": "float32"
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float32"
+        }
+      },
+      "last_f6_raw": [
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0
+      ],
+      "last_identity": {
+        "session_id": "8a9ee8ad-8006-40c5-93a0-f6ed38e5875a",
+        "receipt_sequence": 67,
+        "sdk_frame_id": 67,
+        "sdk_timestamp_raw": 2.2333333333333334,
+        "overwritten_frames": 0,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 0,
+      "receipt_sequence_gap_total": 0,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 56,
+        "min": 0.000310063,
+        "max": 0.000689036,
+        "mean": 0.0003779060892857144
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 56,
+        "min": 0.0005271434783935547,
+        "max": 0.0010786056518554688,
+        "mean": 0.0006073841026851109
+      }
+    },
+    "right/middle": {
+      "count": 56,
+      "rejected_metadata": 0,
+      "observed_hz": 29.337112469667343,
+      "seconds_since_last_receive": 0.03381972499482799,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "empty": 56
+          },
+          "last_shape": [
+            0,
+            3
+          ],
+          "last_dtype": "float32"
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float32"
+        }
+      },
+      "last_f6_raw": [
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0
+      ],
+      "last_identity": {
+        "session_id": "8a9ee8ad-8006-40c5-93a0-f6ed38e5875a",
+        "receipt_sequence": 67,
+        "sdk_frame_id": 67,
+        "sdk_timestamp_raw": 2.2333333333333334,
+        "overwritten_frames": 0,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 0,
+      "receipt_sequence_gap_total": 0,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 56,
+        "min": 0.000293763,
+        "max": 0.000672726,
+        "mean": 0.00035569698214285713
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 56,
+        "min": 0.0005133152008056641,
+        "max": 0.0011141300201416016,
+        "mean": 0.0005884127957480294
+      }
+    },
+    "right/index": {
+      "count": 56,
+      "rejected_metadata": 0,
+      "observed_hz": 29.33718288805816,
+      "seconds_since_last_receive": 0.03376564399513882,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "empty": 56
+          },
+          "last_shape": [
+            0,
+            3
+          ],
+          "last_dtype": "float32"
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float32"
+        }
+      },
+      "last_f6_raw": [
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0
+      ],
+      "last_identity": {
+        "session_id": "8a9ee8ad-8006-40c5-93a0-f6ed38e5875a",
+        "receipt_sequence": 67,
+        "sdk_frame_id": 67,
+        "sdk_timestamp_raw": 2.2333333333333334,
+        "overwritten_frames": 0,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 0,
+      "receipt_sequence_gap_total": 0,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 56,
+        "min": 0.000277763,
+        "max": 0.000652666,
+        "mean": 0.00033932332142857147
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 56,
+        "min": 0.0004947185516357422,
+        "max": 0.0011489391326904297,
+        "mean": 0.0005782842636108398
+      }
+    },
+    "right/thumb": {
+      "count": 56,
+      "rejected_metadata": 0,
+      "observed_hz": 29.33827270925701,
+      "seconds_since_last_receive": 0.03371765399060678,
+      "validation_error_frames": 0,
+      "blocks": {
+        "f6": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            6
+          ],
+          "last_dtype": "float64"
+        },
+        "contact_points": {
+          "statuses": {
+            "empty": 56
+          },
+          "last_shape": [
+            0,
+            3
+          ],
+          "last_dtype": "float32"
+        },
+        "dist_force": {
+          "statuses": {
+            "valid": 56
+          },
+          "last_shape": [
+            60,
+            60,
+            3
+          ],
+          "last_dtype": "float32"
+        }
+      },
+      "last_f6_raw": [
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0,
+        67.0
+      ],
+      "last_identity": {
+        "session_id": "8a9ee8ad-8006-40c5-93a0-f6ed38e5875a",
+        "receipt_sequence": 67,
+        "sdk_frame_id": 67,
+        "sdk_timestamp_raw": 2.2333333333333334,
+        "overwritten_frames": 0,
+        "duplicate_callbacks": 0,
+        "identity_warnings": []
+      },
+      "last_errors": [],
+      "session_changes": 0,
+      "sdk_id_regressions": 0,
+      "sdk_id_forward_gap_events": 0,
+      "receipt_sequence_gap_total": 0,
+      "repeated_or_regressed_sequences": 0,
+      "receive_to_publish_sec": {
+        "count": 56,
+        "min": 0.000263932,
+        "max": 0.000618526,
+        "mean": 0.0003209599999999999
+      },
+      "receive_to_subscriber_ros_sec": {
+        "count": 56,
+        "min": 0.0005004405975341797,
+        "max": 0.0010685920715332031,
+        "mean": 0.0005927809647151402
+      }
+    }
+  },
+  "evidence_kind": "SYNTHETIC DDS recorder integration, not a hardware capture"
+}

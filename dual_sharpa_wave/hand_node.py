@@ -95,6 +95,10 @@ class HandNode(Node):
                     value = self.settings[name]
                     if not math.isfinite(value) or value <= 0:
                         raise ValueError(f'MIT requires finite positive {name}')
+            # Fail before connecting hardware when generated interfaces are missing.
+            if self.settings['tactile_enabled']:
+                from .tactile_contract import message_type
+                tactile_frame_type = message_type()
             self._backend = create_backend(dict(
                 self.settings,
                 _tactile_stamp_clock=lambda: self.get_clock().now().to_msg()))
@@ -128,6 +132,7 @@ class HandNode(Node):
             )
             self._tactile_publishers = {}
             self._f6_publishers = {}
+            self._frame_publishers = {}
             self._tactile_formats = {}
             if self.settings['tactile_enabled']:
                 from .tactile import BLOCKS, FINGERS
@@ -141,6 +146,11 @@ class HandNode(Node):
                 }
                 self._f6_publishers = {
                     finger: self.create_publisher(Float64MultiArray, f'tactile/{finger}/f6', qos)
+                    for finger in FINGERS
+                }
+                self._frame_publishers = {
+                    finger: self.create_publisher(
+                        tactile_frame_type, f'tactile/{finger}/frame', qos)
                     for finger in FINGERS
                 }
                 self._tactile_timer = self.create_timer(
@@ -234,6 +244,7 @@ class HandNode(Node):
 
     def _on_tactile_timer(self):
         from .tactile import FINGERS, to_image
+        from .tactile_contract import to_frame_message
         from std_msgs.msg import Float64MultiArray
         frames, error = self._backend.take_tactile_frames()
         if error:
@@ -253,6 +264,8 @@ class HandNode(Node):
                 self._tactile_publishers[finger, block].publish(to_image(array, frame.stamp))
             if frame.f6 is not None:
                 self._f6_publishers[finger].publish(Float64MultiArray(data=frame.f6.tolist()))
+            self._frame_publishers[finger].publish(to_frame_message(
+                frame, lambda: self.get_clock().now().to_msg()))
 
     def destroy_node(self):
         if self._closed:

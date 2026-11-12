@@ -1,0 +1,27 @@
+{
+  "evidence_kind": "LIVE read-only legacy compatibility check",
+  "comparison": "For exact matching host receipt stamps, atomic DIST_FORCE cast to legacy float32 equals legacy Image values",
+  "duration_sec": 5,
+  "right_fingers": {
+    "pinky": {
+      "matched": 115,
+      "mismatch": 0
+    },
+    "ring": {
+      "matched": 106,
+      "mismatch": 0
+    },
+    "middle": {
+      "matched": 110,
+      "mismatch": 0
+    },
+    "index": {
+      "matched": 110,
+      "mismatch": 0
+    },
+    "thumb": {
+      "matched": 109,
+      "mismatch": 0
+    }
+  }
+}

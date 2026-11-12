@@ -2,10 +2,15 @@
 
 from dataclasses import dataclass
 import math
+import numbers
 import threading
 import time
+from types import MappingProxyType
+import uuid
 
 import numpy as np
+
+from .tactile_contract import INVALID, immutable_array, raw_block
 
 FINGERS = ('pinky', 'ring', 'middle', 'index', 'thumb')
 BLOCKS = ('RAW', 'DEFORM', 'DEFORM3', 'DEFORM3_SE', 'DIST_FORCE')
@@ -66,69 +71,158 @@ def image_array(value, shape=None):
     return result
 
 
-@dataclass
+@dataclass(frozen=True)
 class Frame:
     channel: int
-    stamp: object
+    stamp_ns: int
     sdk_ts: float
     frame_id: object
     blocks: dict
     errors: dict
     f6: object = None
+    side: str = ''
+    finger: str = ''
+    receive_monotonic_ns: int = 0
+    session_id: str = ''
+    receipt_sequence: int = 0
+    overwritten: int = 0
+    duplicates: int = 0
+    identity_warnings: tuple = ()
+    raw_blocks: object = None
+    frame_id_valid: bool = False
+    frame_id_raw: str = ''
+    sdk_ts_valid: bool = False
+    sdk_ts_raw: str = ''
+
+    @property
+    def stamp(self):
+        # Return a fresh ROS object, keeping the cache record immutable.
+        from builtin_interfaces.msg import Time
+        sec, nanosec = divmod(self.stamp_ns, 1_000_000_000)
+        return Time(sec=sec, nanosec=nanosec)
 
 
 class TactileCache:
     """Bounded latest-frame cache. Callbacks only stamp/copy; never publish or draw."""
 
-    def __init__(self, side, stamp_clock=time.time_ns):
+    def __init__(self, side, stamp_clock=time.time_ns, monotonic_clock=time.monotonic_ns):
         self.allowed = channels(side)
+        self.side = side
         self.stamp_clock = stamp_clock
+        self.monotonic_clock = monotonic_clock
         self.lock = threading.Lock()
+        self.receive_lock = threading.Lock()
+        self.session_id = str(uuid.uuid4())
         self.pending = {}
         self.identities = {}
+        self.sequences = {}
+        self.overwritten = {}
+        self.duplicates = {}
         self.error = None
         self.closed = False
 
     def receive(self, payload):
+        # Serialize callbacks so a slow older copy cannot replace a newer record.
+        with self.receive_lock:
+            self._receive(payload)
+
+    def _receive(self, payload):
         try:
             stamp = self.stamp_clock()
+            stamp_ns = (stamp.sec * 1_000_000_000 + stamp.nanosec
+                        if hasattr(stamp, 'sec') else int(stamp))
+            received = self.monotonic_clock()
             if not isinstance(payload, dict):
                 raise ValueError('frame must be a dict')
             channel = payload['channel']
             if isinstance(channel, bool) or not isinstance(channel, int) or channel not in self.allowed:
                 raise ValueError(f'unexpected channel {channel!r}')
-            ts = float(payload['ts'])
-            if not math.isfinite(ts):
-                raise ValueError('nonfinite SDK timestamp')
-            content = payload.get('content') or {}
-            shapes = payload.get('shape') or {}
             blocks, errors = {}, {}
+            raw_ts = payload.get('ts')
+            try:
+                ts = float(raw_ts)
+                ts_valid = (not isinstance(raw_ts, (bool, np.bool_)) and
+                            isinstance(raw_ts, numbers.Real) and math.isfinite(ts))
+            except (ValueError, TypeError, OverflowError):
+                ts, ts_valid = 0.0, False
+            if not ts_valid:
+                ts = 0.0
+            if not ts_valid:
+                errors['ts'] = 'missing or invalid SDK timestamp; see sdk_timestamp_repr'
+            frame_id = payload.get('frame_id')
+            id_valid = (not isinstance(frame_id, (bool, np.bool_)) and
+                        isinstance(frame_id, numbers.Integral) and
+                        -(2**31) <= frame_id < 2**31)
+            if not id_valid:
+                errors['frame_id'] = 'missing or invalid signed int32 SDK ID; see sdk_frame_id_raw'
+            content = payload.get('content', {})
+            shapes = payload.get('shape', {})
+            if not isinstance(content, dict):
+                errors['content'] = 'content must be a dict'
+                content = {}
+            if not isinstance(shapes, dict):
+                errors['shape'] = 'shape must be a dict'
+                # Mark each present raw block invalid; do not infer a trustworthy shape.
+                shapes = {name: 'invalid shape container' for name in content}
+            raw_blocks = {name: raw_block(name, content, shapes)
+                          for name in ('F6', 'CONTACT_POINT', 'DIST_FORCE')}
+            for name, block in raw_blocks.items():
+                if block.status == INVALID:
+                    errors[name] = block.error
             for name in BLOCKS:
                 source = name
                 if name == 'DEFORM' and content.get(name) is None:
                     source = 'DEFORM_JPG'
                 value = content.get(source)
-                if value is None or np.asarray(value).size == 0:
-                    continue
                 try:
+                    if value is None or np.asarray(value).size == 0:
+                        continue
                     array = image_array(value, shapes.get(source))
                     if name == 'DIST_FORCE' and (array.ndim != 3 or array.dtype != np.float32):
                         raise ValueError('DIST_FORCE requires float32 HxWx3')
-                    blocks[name] = array
+                    blocks[name] = immutable_array(array)
                 except (ValueError, TypeError) as exc:
-                    errors[name] = str(exc)
+                    errors.setdefault(name, str(exc))
             f6 = None
             if content.get('F6') is not None:
                 try:
-                    f6 = f6_array(content['F6'], shapes.get('F6'))
+                    f6 = immutable_array(f6_array(content['F6'], shapes.get('F6')))
                 except (ValueError, TypeError) as exc:
                     errors['F6'] = str(exc)
-            frame_id = payload.get('frame_id')
             identity = (frame_id, ts)
             with self.lock:
-                if not self.closed and identity != self.identities.get(channel):
+                if self.closed:
+                    return
+                sequence = self.sequences.get(channel, 0) + 1
+                self.sequences[channel] = sequence
+                previous = self.identities.get(channel)
+                if id_valid and ts_valid and identity == previous:
+                    self.duplicates[channel] = self.duplicates.get(channel, 0) + 1
+                    return
+                warnings = []
+                if previous is not None and id_valid and ts_valid:
+                    if frame_id < previous[0]:
+                        warnings.append('sdk_frame_id_regressed_restart_wrap_or_reorder_unknown')
+                    elif frame_id == previous[0]:
+                        warnings.append('sdk_frame_id_repeated_with_changed_timestamp')
+                    elif frame_id > previous[0] + 1:
+                        warnings.append('sdk_frame_id_forward_gap')
+                    if ts < previous[1]:
+                        warnings.append('sdk_timestamp_regressed')
+                    elif ts == previous[1]:
+                        warnings.append('sdk_timestamp_repeated')
+                if id_valid and ts_valid:
                     self.identities[channel] = identity
-                    self.pending[channel] = Frame(channel, stamp, ts, frame_id, blocks, errors, f6)
+                if channel in self.pending:
+                    self.overwritten[channel] = self.overwritten.get(channel, 0) + 1
+                self.pending[channel] = Frame(
+                    channel, stamp_ns, ts, int(frame_id) if id_valid else None,
+                    MappingProxyType(blocks), MappingProxyType(errors), f6,
+                    self.side, FINGERS[channel % 5], received, self.session_id,
+                    sequence, self.overwritten.get(channel, 0),
+                    self.duplicates.get(channel, 0), tuple(warnings),
+                    MappingProxyType(raw_blocks), id_valid, repr(frame_id),
+                    ts_valid, repr(raw_ts))
         except Exception as exc:
             with self.lock:
                 if not self.closed:

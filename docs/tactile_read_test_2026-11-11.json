@@ -1,0 +1,572 @@
+{
+  "captured_at_utc": "2026-11-12T04:58:24.318073+00:00",
+  "duration_seconds": 10.009643626006437,
+  "mode": "ROS subscriptions only; no SDK connection or commands",
+  "joint_command_graph": {
+    "left": {
+      "publishers": 0,
+      "subscribers": 0
+    },
+    "right": {
+      "publishers": 0,
+      "subscribers": 0
+    }
+  },
+  "topics": {
+    "/sharpa/left_hand/tactile/pinky/f6": {
+      "count": 275,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269186201,
+      "last_receive_monotonic": 112820.235304727,
+      "last_raw_values": [
+        2.86102294921875e-06,
+        -4.76837158203125e-07,
+        -1.1920928955078125e-06,
+        0.0,
+        -5.960464477539063e-08,
+        5.960464477539063e-08
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -1.1920928955078125e-06,
+      "last_max_raw": 2.86102294921875e-06,
+      "observed_hz": 27.493150847548954
+    },
+    "/sharpa/left_hand/tactile/pinky/dist_force": {
+      "count": 274,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269238261,
+      "last_receive_monotonic": 112820.235346437,
+      "last_header_stamp": 1794459504.2533267,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.0350341796875,
+      "last_max_raw": 0.0197601318359375,
+      "observed_hz": 27.392839328943325
+    },
+    "/sharpa/left_hand/tactile/pinky/raw": {
+      "count": 275,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269296542,
+      "last_receive_monotonic": 112820.235025843,
+      "last_header_stamp": 1794459504.2533267,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 18.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 27.49422462966589
+    },
+    "/sharpa/left_hand/tactile/ring/f6": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269344942,
+      "last_receive_monotonic": 112820.235393468,
+      "last_raw_values": [
+        -8.344650268554688e-06,
+        1.0132789611816406e-06,
+        1.430511474609375e-06,
+        -5.960464477539063e-08,
+        0.0,
+        -1.7881393432617188e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -8.344650268554688e-06,
+      "last_max_raw": 1.430511474609375e-06,
+      "observed_hz": 28.396409997585202
+    },
+    "/sharpa/left_hand/tactile/ring/dist_force": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.268682057,
+      "last_receive_monotonic": 112820.235423058,
+      "last_header_stamp": 1794459504.2606134,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.032440185546875,
+      "last_max_raw": 0.02130126953125,
+      "observed_hz": 28.394437055361198
+    },
+    "/sharpa/left_hand/tactile/ring/raw": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.268860588,
+      "last_receive_monotonic": 112820.235464759,
+      "last_header_stamp": 1794459504.2606134,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 13.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.39482687828934
+    },
+    "/sharpa/left_hand/tactile/middle/f6": {
+      "count": 281,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.302320178,
+      "last_receive_monotonic": 112820.235504449,
+      "last_raw_values": [
+        1.811981201171875e-05,
+        -2.682209014892578e-06,
+        -5.364418029785156e-06,
+        5.960464477539063e-08,
+        -5.960464477539063e-08,
+        3.5762786865234375e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -5.364418029785156e-06,
+      "last_max_raw": 1.811981201171875e-05,
+      "observed_hz": 28.188342465126727
+    },
+    "/sharpa/left_hand/tactile/middle/dist_force": {
+      "count": 281,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.302357328,
+      "last_receive_monotonic": 112820.23553228,
+      "last_header_stamp": 1794459504.2549717,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.036712646484375,
+      "last_max_raw": 0.0245513916015625,
+      "observed_hz": 28.18836891053165
+    },
+    "/sharpa/left_hand/tactile/middle/raw": {
+      "count": 282,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.302403948,
+      "last_receive_monotonic": 112820.2685277,
+      "last_header_stamp": 1794459504.2881057,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 11.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.19551582865604
+    },
+    "/sharpa/left_hand/tactile/index/f6": {
+      "count": 281,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269371442,
+      "last_receive_monotonic": 112820.235609421,
+      "last_raw_values": [
+        -1.33514404296875e-05,
+        1.7285346984863281e-06,
+        3.933906555175781e-06,
+        -5.960464477539063e-08,
+        5.960464477539063e-08,
+        -2.980232238769531e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -1.33514404296875e-05,
+      "last_max_raw": 3.933906555175781e-06,
+      "observed_hz": 28.094853904765962
+    },
+    "/sharpa/left_hand/tactile/index/dist_force": {
+      "count": 281,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269399383,
+      "last_receive_monotonic": 112820.235636081,
+      "last_header_stamp": 1794459504.263912,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.0286865234375,
+      "last_max_raw": 0.01654052734375,
+      "observed_hz": 28.09485751592353
+    },
+    "/sharpa/left_hand/tactile/index/raw": {
+      "count": 281,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269442323,
+      "last_receive_monotonic": 112820.235674402,
+      "last_header_stamp": 1794459504.263912,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 23.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.09487053685556
+    },
+    "/sharpa/left_hand/tactile/thumb/f6": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269480993,
+      "last_receive_monotonic": 112820.235710942,
+      "last_raw_values": [
+        1.1920928955078125e-07,
+        5.960464477539063e-08,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": 0.0,
+      "last_max_raw": 1.1920928955078125e-07,
+      "observed_hz": 28.395893075732992
+    },
+    "/sharpa/left_hand/tactile/thumb/dist_force": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269507584,
+      "last_receive_monotonic": 112820.235737762,
+      "last_header_stamp": 1794459504.2625291,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.02630615234375,
+      "last_max_raw": 0.01605224609375,
+      "observed_hz": 28.39589242325372
+    },
+    "/sharpa/left_hand/tactile/thumb/raw": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.269560594,
+      "last_receive_monotonic": 112820.235776013,
+      "last_header_stamp": 1794459504.2625291,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 8.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.395934474830874
+    },
+    "/sharpa/right_hand/tactile/pinky/f6": {
+      "count": 290,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291440547,
+      "last_receive_monotonic": 112820.224707475,
+      "last_raw_values": [
+        -8.702278137207031e-06,
+        1.0132789611816406e-06,
+        2.682209014892578e-06,
+        -5.960464477539063e-08,
+        0.0,
+        -1.7881393432617188e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -8.702278137207031e-06,
+      "last_max_raw": 2.682209014892578e-06,
+      "observed_hz": 29.09415422885839
+    },
+    "/sharpa/right_hand/tactile/pinky/dist_force": {
+      "count": 289,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291485717,
+      "last_receive_monotonic": 112820.224749075,
+      "last_header_stamp": 1794459504.269206,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.0217437744140625,
+      "last_max_raw": 0.01380157470703125,
+      "observed_hz": 28.993492835151816
+    },
+    "/sharpa/right_hand/tactile/pinky/raw": {
+      "count": 289,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291139214,
+      "last_receive_monotonic": 112820.224801716,
+      "last_header_stamp": 1794459504.269206,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 14.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.992327849047562
+    },
+    "/sharpa/right_hand/tactile/ring/f6": {
+      "count": 288,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291555488,
+      "last_receive_monotonic": 112820.2580761,
+      "last_raw_values": [
+        -1.4722347259521484e-05,
+        2.205371856689453e-06,
+        4.5299530029296875e-06,
+        0.0,
+        5.960464477539063e-08,
+        -2.980232238769531e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -1.4722347259521484e-05,
+      "last_max_raw": 4.5299530029296875e-06,
+      "observed_hz": 28.7964086137068
+    },
+    "/sharpa/right_hand/tactile/ring/dist_force": {
+      "count": 288,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291586698,
+      "last_receive_monotonic": 112820.258119711,
+      "last_header_stamp": 1794459504.2816272,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.02825927734375,
+      "last_max_raw": 0.01522064208984375,
+      "observed_hz": 28.79637278337684
+    },
+    "/sharpa/right_hand/tactile/ring/raw": {
+      "count": 288,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291648588,
+      "last_receive_monotonic": 112820.258172851,
+      "last_header_stamp": 1794459504.2816272,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 16.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.79639806481685
+    },
+    "/sharpa/right_hand/tactile/middle/f6": {
+      "count": 290,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291713749,
+      "last_receive_monotonic": 112820.224845457,
+      "last_raw_values": [
+        -8.761882781982422e-06,
+        1.1324882507324219e-06,
+        2.1457672119140625e-06,
+        -5.960464477539063e-08,
+        5.960464477539063e-08,
+        -1.7881393432617188e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -8.761882781982422e-06,
+      "last_max_raw": 2.1457672119140625e-06,
+      "observed_hz": 29.094550288409504
+    },
+    "/sharpa/right_hand/tactile/middle/dist_force": {
+      "count": 290,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291741469,
+      "last_receive_monotonic": 112820.224874307,
+      "last_header_stamp": 1794459504.2705872,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.032501220703125,
+      "last_max_raw": 0.0185699462890625,
+      "observed_hz": 29.094546978636515
+    },
+    "/sharpa/right_hand/tactile/middle/raw": {
+      "count": 290,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.29178235,
+      "last_receive_monotonic": 112820.224915138,
+      "last_header_stamp": 1794459504.2705872,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 13.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 29.09454712508965
+    },
+    "/sharpa/right_hand/tactile/index/f6": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.29181925,
+      "last_receive_monotonic": 112820.258216992,
+      "last_raw_values": [
+        8.58306884765625e-06,
+        -2.7418136596679688e-06,
+        -6.377696990966797e-06,
+        1.1920928955078125e-07,
+        -5.960464477539063e-08,
+        2.384185791015625e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -6.377696990966797e-06,
+      "last_max_raw": 8.58306884765625e-06,
+      "observed_hz": 28.395415006067573
+    },
+    "/sharpa/right_hand/tactile/index/dist_force": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.29184543,
+      "last_receive_monotonic": 112820.258245902,
+      "last_header_stamp": 1794459504.3025482,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.041839599609375,
+      "last_max_raw": 0.0260467529296875,
+      "observed_hz": 28.395407227992397
+    },
+    "/sharpa/right_hand/tactile/index/raw": {
+      "count": 284,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.2918839,
+      "last_receive_monotonic": 112820.257789617,
+      "last_header_stamp": 1794459504.3025482,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 18.0,
+      "last_max_raw": 255.0,
+      "observed_hz": 28.39681691122983
+    },
+    "/sharpa/right_hand/tactile/thumb/f6": {
+      "count": 282,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291919541,
+      "last_receive_monotonic": 112820.258282983,
+      "last_raw_values": [
+        1.7881393432617188e-05,
+        -2.0265579223632812e-06,
+        -4.887580871582031e-06,
+        1.1920928955078125e-07,
+        -1.1920928955078125e-07,
+        3.5762786865234375e-07
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "float64",
+      "last_min_raw": -4.887580871582031e-06,
+      "last_max_raw": 1.7881393432617188e-05,
+      "observed_hz": 28.194837729460396
+    },
+    "/sharpa/right_hand/tactile/thumb/dist_force": {
+      "count": 281,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.291945211,
+      "last_receive_monotonic": 112820.258309493,
+      "last_header_stamp": 1794459504.303983,
+      "encoding": "32FC3",
+      "shape": [
+        60,
+        60,
+        3
+      ],
+      "dtype": "float32",
+      "last_min_raw": -0.03271484375,
+      "last_max_raw": 0.018157958984375,
+      "observed_hz": 28.094497860755965
+    },
+    "/sharpa/right_hand/tactile/thumb/raw": {
+      "count": 282,
+      "invalid_count": 0,
+      "first_receive_monotonic": 112810.292007301,
+      "last_receive_monotonic": 112820.258349754,
+      "last_header_stamp": 1794459504.303983,
+      "encoding": "8UC1",
+      "shape": [
+        240,
+        320
+      ],
+      "dtype": "uint8",
+      "last_min_raw": 6.0,
+      "last_max_raw": 247.0,
+      "observed_hz": 28.194897107453073
+    }
+  },
+  "read_only_parameters": {
+    "left": true,
+    "right": true
+  },
+  "read_only_parameter_evidence": "ros2 param get for each hand_node, queried alongside the subscription probe",
+  "scope": "Existing legacy ROS topics only; Phase 1A coherent frame contract remains incomplete",
+  "rate_definition": "(count - 1) / (last_receive_monotonic - first_receive_monotonic)",
+  "not_measured": [
+    "SDK CONTACT_POINT availability",
+    "SDK frame continuity and delivery gaps",
+    "cross-topic callback coherence",
+    "receive/publish latency",
+    "controlled manual contact response",
+    "physical units or calibration"
+  ]
+}
